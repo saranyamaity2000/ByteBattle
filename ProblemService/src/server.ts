@@ -5,7 +5,7 @@ import app from "./app";
 
 // MongoDB Connection and Server Start
 (async () => {
-	const mongoUri = process.env.MONGO_URI || "";
+	const mongoUri = serverConfig.MONGO_URI;
 	try {
 		await mongoose.connect(mongoUri);
 		logger.info("MongoDB connected");
