@@ -15,12 +15,7 @@ describe("Problem Controller Integration Tests", () => {
 				explanation: "Because nums[0] + nums[1] == 9, we return [0, 1].",
 			},
 		],
-		testcases: [
-			{
-				testcaseName: "Basic Test Case 1",
-				url: "https://s3.amazonaws.com/test-bucket/two-sum-test1.txt",
-			},
-		],
+		testcaseUrl: "https://s3.amazonaws.com/test-bucket/two-sum-testcases.txt",
 		constraints: ["2 <= nums.length <= 10^4", "-10^9 <= nums[i] <= 10^9"],
 		timeLimitMs: 1000,
 		memoryLimitKb: 65536,
@@ -44,7 +39,7 @@ describe("Problem Controller Integration Tests", () => {
 			expect(response.body.data.slug).toBe(mockProblemData.slug);
 			expect(response.body.data.difficulty).toBe(mockProblemData.difficulty);
 			expect(response.body.data.examples).toHaveLength(1);
-			expect(response.body.data.testcases).toHaveLength(1);
+			expect(response.body.data.testcaseUrl).toBe(mockProblemData.testcaseUrl);
 			expect(response.body.data.createdAt).toBeDefined();
 			expect(response.body.data.updatedAt).toBeDefined();
 		});
@@ -56,7 +51,7 @@ describe("Problem Controller Integration Tests", () => {
 				statement: "A minimal problem statement",
 				difficulty: "medium" as const,
 				examples: [],
-				testcases: [],
+				testcaseUrl: "https://s3.amazonaws.com/test-bucket/minimal-problem-testcases.txt",
 			};
 
 			const response = await request(app)
@@ -122,7 +117,7 @@ describe("Problem Controller Integration Tests", () => {
 			expect(response.body.data.title).toBe(mockProblemData.title);
 			expect(response.body.data.difficulty).toBe(mockProblemData.difficulty);
 			expect(response.body.data.examples).toHaveLength(1);
-			expect(response.body.data.testcases).toHaveLength(1);
+			expect(response.body.data.testcaseUrl).toBe(mockProblemData.testcaseUrl);
 		});
 
 		it("should return null for non-existent slug", async () => {
@@ -251,7 +246,8 @@ describe("Problem Controller Integration Tests", () => {
 				statement: "Test statement",
 				difficulty: "easy" as const,
 				examples: [],
-				testcases: [],
+				testcaseUrl:
+					"https://s3.amazonaws.com/test-bucket/problem-without-slug-testcases.txt",
 			};
 
 			const response = await request(app)
@@ -283,7 +279,7 @@ describe("Problem Controller Integration Tests", () => {
 				statement: "Test statement",
 				difficulty: "easy" as const,
 				examples: [],
-				testcases: [],
+				testcaseUrl: "https://s3.amazonaws.com/test-bucket/test-problem-defaults.txt",
 			};
 
 			const response = await request(app)

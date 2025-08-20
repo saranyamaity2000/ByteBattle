@@ -6,17 +6,13 @@ const ProblemExampleZodSchema = z.object({
 	output: z.string(),
 	explanation: z.string().optional(),
 });
-const TestcaseZodSchema = z.object({
-	testcaseName: z.string().min(1),
-	url: z.string().min(1).url(),
-});
 export const ProblemCreationZodSchema = z.object({
 	title: z.string().min(1),
 	slug: z.string().min(1).optional(),
 	statement: z.string().min(1),
 	difficulty: DifficultyZodEnum,
 	examples: z.array(ProblemExampleZodSchema).default([]),
-	testcases: z.array(TestcaseZodSchema).default([]),
+	testcaseUrl: z.string().min(1).url(),
 	constraints: z.array(z.string()).default([]),
 	timeLimitMs: z.number().int().min(1).default(1000), // 1 second minimum
 	memoryLimitKb: z.number().int().min(1).default(65536), // 64 MB minimum

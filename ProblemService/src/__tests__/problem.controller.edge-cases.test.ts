@@ -20,7 +20,7 @@ describe("Problem Controller Edge Cases", () => {
 					statement: "Test statement",
 					difficulty: "easy",
 					examples: [],
-					testcases: [],
+					testcaseUrl: "https://s3.amazonaws.com/test-bucket/long-title-test.txt",
 				})
 				.expect(201);
 
@@ -35,7 +35,7 @@ describe("Problem Controller Edge Cases", () => {
 					statement: "Test statement",
 					difficulty: "easy",
 					examples: [],
-					testcases: [],
+					testcaseUrl: "https://s3.amazonaws.com/test-bucket/special-chars-test.txt",
 				})
 				.expect(201);
 
@@ -52,12 +52,12 @@ describe("Problem Controller Edge Cases", () => {
 					statement: "Test statement",
 					difficulty: "super-hard", // invalid difficulty
 					examples: [],
-					testcases: [],
+					testcaseUrl: "https://s3.amazonaws.com/test-bucket/invalid-difficulty-test.txt",
 				})
 				.expect(400);
 		});
 
-		it("should handle invalid URL in testcases", async () => {
+		it("should handle invalid URL in testcaseUrl", async () => {
 			await request(app)
 				.post("/api/v1/problems")
 				.send({
@@ -66,12 +66,7 @@ describe("Problem Controller Edge Cases", () => {
 					statement: "Test statement",
 					difficulty: "easy",
 					examples: [],
-					testcases: [
-						{
-							testcaseName: "Test Case 1",
-							url: "not-a-valid-url",
-						},
-					],
+					testcaseUrl: "not-a-valid-url",
 				})
 				.expect(400);
 		});
@@ -93,32 +88,29 @@ describe("Problem Controller Edge Cases", () => {
 					statement: "A problem with many examples",
 					difficulty: "medium",
 					examples: manyExamples,
-					testcases: [],
+					testcaseUrl: "https://s3.amazonaws.com/test-bucket/many-examples-testcases.txt",
 				})
 				.expect(201);
 
 			expect(response.body.data.examples).toHaveLength(50);
 		});
 
-		it("should handle problems with many testcases", async () => {
-			const manyTestcases = Array.from({ length: 100 }, (_, i) => ({
-				testcaseName: `Test Case ${i}`,
-				url: `https://s3.amazonaws.com/test-bucket/testcase-${i}.txt`,
-			}));
-
+		it("should handle testcase URL validation", async () => {
 			const response = await request(app)
 				.post("/api/v1/problems")
 				.send({
-					title: "Problem with Many Testcases",
-					slug: "many-testcases-problem",
-					statement: "A problem with many testcases",
+					title: "Problem with Testcase URL",
+					slug: "testcase-url-problem",
+					statement: "A problem with testcase URL validation",
 					difficulty: "hard",
 					examples: [],
-					testcases: manyTestcases,
+					testcaseUrl: "https://s3.amazonaws.com/test-bucket/complex-testcases.txt",
 				})
 				.expect(201);
 
-			expect(response.body.data.testcases).toHaveLength(100);
+			expect(response.body.data.testcaseUrl).toBe(
+				"https://s3.amazonaws.com/test-bucket/complex-testcases.txt"
+			);
 		});
 
 		it("should handle very long problem statement", async () => {
@@ -132,7 +124,8 @@ describe("Problem Controller Edge Cases", () => {
 					statement: longStatement,
 					difficulty: "easy",
 					examples: [],
-					testcases: [],
+					testcaseUrl:
+						"https://s3.amazonaws.com/test-bucket/long-statement-testcases.txt",
 				})
 				.expect(201);
 
@@ -150,7 +143,8 @@ describe("Problem Controller Edge Cases", () => {
 					statement: "Test statement",
 					difficulty: "easy",
 					examples: [],
-					testcases: [],
+					testcaseUrl:
+						"https://s3.amazonaws.com/test-bucket/min-time-limit-testcases.txt",
 					timeLimitMs: 1, // minimum possible
 				})
 				.expect(201);
@@ -167,7 +161,8 @@ describe("Problem Controller Edge Cases", () => {
 					statement: "Test statement",
 					difficulty: "easy",
 					examples: [],
-					testcases: [],
+					testcaseUrl:
+						"https://s3.amazonaws.com/test-bucket/max-memory-limit-testcases.txt",
 					memoryLimitKb: 1048576, // 1GB in KB
 				})
 				.expect(201);
@@ -184,7 +179,8 @@ describe("Problem Controller Edge Cases", () => {
 					statement: "Test statement",
 					difficulty: "easy",
 					examples: [],
-					testcases: [],
+					testcaseUrl:
+						"https://s3.amazonaws.com/test-bucket/negative-values-testcases.txt",
 					timeLimitMs: -100, // negative time
 					memoryLimitKb: -1000, // negative memory
 				})
@@ -204,7 +200,7 @@ describe("Problem Controller Edge Cases", () => {
 					statement: "Unicode problem statement with emojis 🚀",
 					difficulty: "easy",
 					examples: [],
-					testcases: [],
+					testcaseUrl: "https://s3.amazonaws.com/test-bucket/unicode-testcases.txt",
 				})
 				.expect(201);
 
@@ -222,7 +218,7 @@ describe("Problem Controller Edge Cases", () => {
 					statement: "Problem with RTL text",
 					difficulty: "medium",
 					examples: [],
-					testcases: [],
+					testcaseUrl: "https://s3.amazonaws.com/test-bucket/rtl-testcases.txt",
 				})
 				.expect(201);
 
@@ -238,7 +234,7 @@ describe("Problem Controller Edge Cases", () => {
 				statement: `Statement for problem ${index}`,
 				difficulty: "easy" as const,
 				examples: [],
-				testcases: [],
+				testcaseUrl: `https://s3.amazonaws.com/test-bucket/concurrent-problem-${index}-testcases.txt`,
 			});
 
 			// Create 10 problems concurrently
@@ -263,7 +259,7 @@ describe("Problem Controller Edge Cases", () => {
 				statement: "Original statement",
 				difficulty: "easy",
 				examples: [],
-				testcases: [],
+				testcaseUrl: "https://s3.amazonaws.com/test-bucket/concurrent-update-testcases.txt",
 			});
 
 			const slug = createResponse.body.data.slug;

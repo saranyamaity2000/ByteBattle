@@ -15,10 +15,6 @@ export interface IProblemExample {
 	explanation?: string;
 }
 
-export interface ITestcase {
-	testcaseName: string;
-	url: string;
-}
 // Problem document interface
 export interface IProblem extends Document {
 	title: string;
@@ -30,7 +26,7 @@ export interface IProblem extends Document {
 	timeLimitMs?: number;
 	memoryLimitKb?: number;
 	author?: string; // for now string
-	testcases: ITestcase[];
+	testcaseUrl: string;
 
 	isPublished: boolean;
 	isPremium: boolean;
@@ -55,13 +51,6 @@ const ProblemExampleSchema = new Schema<IProblemExample>(
 	},
 	{ _id: false }
 );
-const TestcaseSchema = new Schema<ITestcase>(
-	{
-		testcaseName: { type: String, required: true },
-		url: { type: String, required: true },
-	},
-	{ _id: false }
-);
 const ProblemSchema = new Schema<IProblem>(
 	{
 		title: { type: String, required: true, trim: true },
@@ -73,7 +62,7 @@ const ProblemSchema = new Schema<IProblem>(
 		timeLimitMs: { type: Number, default: 1000 },
 		memoryLimitKb: { type: Number, default: 65536 },
 		author: { type: String },
-		testcases: { type: [TestcaseSchema], required: true, minLength: 1 },
+		testcaseUrl: { type: String, required: true },
 		isPublished: { type: Boolean, default: false, index: true },
 		isPremium: { type: Boolean, default: false, index: true },
 		submissionsCount: { type: Number, default: 0 },
