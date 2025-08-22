@@ -1,10 +1,12 @@
 import { ProblemCreationDTO } from "../dtos/problem.dto";
 import { IProblem } from "../models/problem.model";
+import { sanitizeMarkdown } from "../utils/helpers/markdown.helpers";
 import { ProblemRepository } from "./../repositories/problem.repo";
 export class ProblemService {
 	constructor(private readonly problemRepository: ProblemRepository) {}
 
 	async createProblem(data: ProblemCreationDTO): Promise<IProblem> {
+		data.statement = await sanitizeMarkdown(data.statement);
 		return this.problemRepository.createProblem(data);
 	}
 
@@ -13,6 +15,9 @@ export class ProblemService {
 	}
 
 	async updateProblem(slug: string, data: Partial<IProblem>): Promise<IProblem | null> {
+		if (data.statement) {
+			data.statement = await sanitizeMarkdown(data.statement);
+		}
 		return this.problemRepository.updateProblem(slug, data);
 	}
 
