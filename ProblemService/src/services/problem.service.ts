@@ -1,3 +1,4 @@
+import logger from "../config/logger.config";
 import { ProblemCreationDTO } from "../dtos/problem.dto";
 import { IProblem } from "../models/problem.model";
 import { sanitizeMarkdown } from "../utils/helpers/markdown.helpers";
@@ -7,6 +8,7 @@ export class ProblemService {
 
 	async createProblem(data: ProblemCreationDTO): Promise<IProblem> {
 		data.statement = await sanitizeMarkdown(data.statement);
+        logger.info("Problem statement sanitized, now proceeding with problem creation");
 		return this.problemRepository.createProblem(data);
 	}
 
@@ -17,6 +19,7 @@ export class ProblemService {
 	async updateProblem(slug: string, data: Partial<IProblem>): Promise<IProblem | null> {
 		if (data.statement) {
 			data.statement = await sanitizeMarkdown(data.statement);
+            logger.info("Problem statement sanitized, now proceeding with problem update");
 		}
 		return this.problemRepository.updateProblem(slug, data);
 	}
