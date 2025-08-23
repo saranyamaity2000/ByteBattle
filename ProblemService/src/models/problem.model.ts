@@ -26,7 +26,7 @@ export interface IProblem extends Document {
 	timeLimitMs?: number;
 	memoryLimitKb?: number;
 	author?: string; // for now string
-	testcaseUrl: string;
+	testcaseUrl?: string;
 
 	isPublished: boolean;
 	isPremium: boolean;
@@ -62,7 +62,7 @@ const ProblemSchema = new Schema<IProblem>(
 		timeLimitMs: { type: Number, default: 1000 },
 		memoryLimitKb: { type: Number, default: 65536 },
 		author: { type: String },
-		testcaseUrl: { type: String, required: true },
+		testcaseUrl: { type: String, required: false },
 		isPublished: { type: Boolean, default: false, index: true },
 		isPremium: { type: Boolean, default: false, index: true },
 		submissionsCount: { type: Number, default: 0 },

@@ -12,12 +12,12 @@ export const ProblemCreationZodSchema = z.object({
 	statement: z.string().min(1),
 	difficulty: DifficultyZodEnum,
 	examples: z.array(ProblemExampleZodSchema).default([]),
-	testcaseUrl: z.string().min(1).url(),
+	testcaseUrl: z.string().min(1).url().optional(),
 	constraints: z.array(z.string()).default([]),
 	timeLimitMs: z.number().int().min(1).default(1000), // 1 second minimum
 	memoryLimitKb: z.number().int().min(1).default(65536), // 64 MB minimum
 	author: z.string().optional(),
-	isPublished: z.boolean().default(false),
+	isPublished: z.boolean().default(false).optional(),
 	isPremium: z.boolean().default(false),
 	submissionsCount: z.number().int().default(0),
 	likes: z.number().int().default(0),

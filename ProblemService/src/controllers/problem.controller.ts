@@ -53,6 +53,16 @@ class ProblemController {
 		await this.problemService.deleteProblem(slug);
 		res.status(200).json({ message: `Problem ${slug} deleted successfully` });
 	};
+
+	public publishProblem = async (
+		req: Request,
+		res: Response,
+		next: NextFunction
+	): Promise<void> => {
+		const { slug } = req.params;
+		const publishedProblem = await this.problemService.publishProblem(slug);
+		res.status(200).json({ data: publishedProblem });
+	};
 }
 
 const problemRepository = new ProblemRepository();

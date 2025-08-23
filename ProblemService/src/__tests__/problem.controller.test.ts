@@ -51,7 +51,6 @@ describe("Problem Controller Integration Tests", () => {
 				statement: "A minimal problem statement",
 				difficulty: "medium" as const,
 				examples: [],
-				testcaseUrl: "https://s3.amazonaws.com/test-bucket/minimal-problem-testcases.txt",
 			};
 
 			const response = await request(app)
@@ -62,6 +61,26 @@ describe("Problem Controller Integration Tests", () => {
 			expect(response.body.data.title).toBe(minimalData.title);
 			expect(response.body.data.isPublished).toBe(false); // default value
 			expect(response.body.data.submissionsCount).toBe(0); // default value
+		});
+
+		it("should create a problem with testcaseUrl", async () => {
+			const dataWithTestcase = {
+				title: "Problem With Testcase",
+				slug: "problem-with-testcase",
+				statement: "A problem statement with testcase",
+				difficulty: "easy" as const,
+				examples: [],
+				testcaseUrl: "https://s3.amazonaws.com/test-bucket/problem-with-testcase.txt",
+			};
+
+			const response = await request(app)
+				.post("/api/v1/problems")
+				.send(dataWithTestcase)
+				.expect(201);
+
+			expect(response.body.data.title).toBe(dataWithTestcase.title);
+			expect(response.body.data.testcaseUrl).toBe(dataWithTestcase.testcaseUrl);
+			expect(response.body.data.isPublished).toBe(false); // default value
 		});
 
 		it("should return 400 for invalid problem data", async () => {
@@ -193,6 +212,64 @@ describe("Problem Controller Integration Tests", () => {
 		});
 	});
 
+	describe("PATCH /api/v1/problems/:slug/publish", () => {
+		beforeEach(async () => {
+			// Create a test problem with testcaseUrl
+			await request(app).post("/api/v1/problems").send(mockProblemData);
+		});
+
+		it("should publish a problem when testcaseUrl is present", async () => {
+			const response = await request(app)
+				.patch(`/api/v1/problems/${mockProblemData.slug}/publish`)
+				.expect(200);
+
+			expect(response.body.data).toBeDefined();
+			expect(response.body.data.isPublished).toBe(true);
+			expect(response.body.data.slug).toBe(mockProblemData.slug);
+		});
+
+		it("should fail to publish a problem without testcaseUrl", async () => {
+			// Create a problem without testcaseUrl
+			const problemWithoutTestcase = {
+				title: "Problem Without Testcase",
+				slug: "problem-without-testcase",
+				statement: "A problem without testcase",
+				difficulty: "easy" as const,
+				examples: [],
+			};
+
+			await request(app).post("/api/v1/problems").send(problemWithoutTestcase);
+
+			const response = await request(app)
+				.patch(`/api/v1/problems/${problemWithoutTestcase.slug}/publish`)
+				.expect(400);
+
+			expect(response.body.message).toContain("Cannot publish problem without test cases");
+		});
+
+		it("should fail to publish an already published problem", async () => {
+			// First publish the problem
+			await request(app)
+				.patch(`/api/v1/problems/${mockProblemData.slug}/publish`)
+				.expect(200);
+
+			// Try to publish again
+			const response = await request(app)
+				.patch(`/api/v1/problems/${mockProblemData.slug}/publish`)
+				.expect(400);
+
+			expect(response.body.message).toContain("already published");
+		});
+
+		it("should fail to publish a non-existent problem", async () => {
+			const response = await request(app)
+				.patch("/api/v1/problems/non-existent-slug/publish")
+				.expect(404);
+
+			expect(response.body.message).toContain("Problem not found");
+		});
+	});
+
 	describe("DELETE /api/v1/problems/:slug", () => {
 		beforeEach(async () => {
 			// Create a test problem
@@ -246,8 +323,6 @@ describe("Problem Controller Integration Tests", () => {
 				statement: "Test statement",
 				difficulty: "easy" as const,
 				examples: [],
-				testcaseUrl:
-					"https://s3.amazonaws.com/test-bucket/problem-without-slug-testcases.txt",
 			};
 
 			const response = await request(app)
@@ -279,7 +354,6 @@ describe("Problem Controller Integration Tests", () => {
 				statement: "Test statement",
 				difficulty: "easy" as const,
 				examples: [],
-				testcaseUrl: "https://s3.amazonaws.com/test-bucket/test-problem-defaults.txt",
 			};
 
 			const response = await request(app)

@@ -20,4 +20,5 @@ problemRouter.put(
 	validateRequestBody(ProblemUpdateZodSchema),
 	problemController.updateProblem
 );
+problemRouter.patch("/:slug/publish", problemController.publishProblem);
 problemRouter.delete("/:slug", problemController.deleteProblem);

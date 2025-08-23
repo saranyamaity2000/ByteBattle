@@ -1,6 +1,10 @@
 module.exports = {
-	preset: "ts-jest",
-	testEnvironment: "node",
+	extensionsToTreatAsEsm: [".ts"],
+	verbose: true,
+	preset: "ts-jest/presets/default-esm",
+	transform: {
+		"^.+\\.tsx?$": ["ts-jest", { useESM: true }],
+	},
 	roots: ["<rootDir>/src"],
 	testMatch: ["**/__tests__/**/*.test.ts"],
 	collectCoverageFrom: [
@@ -14,4 +18,8 @@ module.exports = {
 	testTimeout: 30000,
 	detectOpenHandles: true,
 	forceExit: true,
+	moduleNameMapper: {
+		"^@/(.*)$": "<rootDir>/src/$1",
+	},
+	transformIgnorePatterns: ["node_modules/(?!(marked|sanitize-html|turndown)/)"],
 };
