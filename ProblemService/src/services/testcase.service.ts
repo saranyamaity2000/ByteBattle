@@ -22,11 +22,11 @@ export class TestcaseService {
 		}
 		const validation = TestCasesZodSchema.safeParse(parsedJson);
 		if (!validation.success) {
-            logger.error(`Invalid test case format: ${validation.error.message}`);
+			logger.error(`Invalid test case format: ${validation.error.message}`);
 			throw new BadRequestError(`Invalid test case format: ${validation.error.message}`);
 		} else {
-            logger.info("Uploaded Testcase file is valid");
-        }
+			logger.info("Uploaded Testcase file is valid");
+		}
 	}
 
 	async uploadTestCaseToS3(file: Express.Multer.File) {

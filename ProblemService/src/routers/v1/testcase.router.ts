@@ -4,4 +4,8 @@ import { testcaseController } from "../../controllers/testcase.controller";
 
 export const testcaseRouter = express.Router();
 
-testcaseRouter.post("/upload", uploadTestcaseFileMiddleware, testcaseController.uploadTestCaseFile);
+testcaseRouter.post(
+	"/upload/:problemSlug",
+	uploadTestcaseFileMiddleware,
+	testcaseController.uploadTestCaseFile
+);

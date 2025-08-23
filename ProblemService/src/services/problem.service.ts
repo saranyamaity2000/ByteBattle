@@ -55,4 +55,8 @@ export class ProblemService {
 		const updateData = { isPublished: true };
 		return this.problemRepository.updateProblem(slug, updateData);
 	}
+
+	async updateTestcaseUrl(slug: string, url: string): Promise<IProblem | null> {
+		return await this.problemRepository.updateProblem(slug, { testcaseUrl: url });
+	}
 }
