@@ -29,7 +29,7 @@ export class TestcaseService {
 		}
 	}
 
-	async uploadTestCaseToS3(file: Express.Multer.File) {
+	async uploadTestCaseToS3(file: Express.Multer.File, fileNameToBeUsed: string) {
 		const s3 = new S3Client({
 			region: serverConfig.AWS.REGION,
 			credentials: {
@@ -40,7 +40,7 @@ export class TestcaseService {
 
 		const params = {
 			Bucket: serverConfig.AWS.BUCKET_NAME,
-			Key: `testcases/${Date.now()}_${file.originalname}`, // May collide.
+			Key: `testcases/${fileNameToBeUsed}`,
 			Body: file.buffer,
 			ContentType: file.mimetype,
 		};

@@ -18,9 +18,8 @@ class TestcaseController {
 		}
 		const problemSlug = req.params.problemSlug as string;
 		const problem = await this.problemService.getProblemBySlug(problemSlug);
-
 		if (!problem) {
-			throw new NotFoundError(`Problem ${problemSlug} not found`);
+			throw new NotFoundError(`Problem with slug '${problemSlug}' not found`);
 		}
 
 		logger.info("validating uploaded test case");
@@ -28,7 +27,7 @@ class TestcaseController {
 		logger.info("uploaded test case validated successfully");
 
 		logger.info("Starting testcase upload process");
-		const testcaseUrl = await this.testcaseService.uploadTestCaseToS3(file);
+		const testcaseUrl = await this.testcaseService.uploadTestCaseToS3(file, problemSlug);
 		logger.info("Testcase upload process completed successfully");
 
 		await this.problemService.updateTestcaseUrl(problemSlug, testcaseUrl);
