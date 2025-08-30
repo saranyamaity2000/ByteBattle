@@ -1,7 +1,7 @@
 import { FastifyRequest, FastifyReply } from "fastify";
-import { CreateSubmissionRequest, UpdateSubmissionStatusRequest } from "../models/submission";
-import { SubmissionService } from "../services/submission";
+import { SubmissionService } from "../services/submission.service";
 import { NotFoundError } from "../utils/errors";
+import { CreateSubmissionRequestDTO, UpdateSubmissionStatusRequestDTO } from "../dtos/submission.dto";
 
 interface GetSubmissionParams {
 	id: string;
@@ -15,7 +15,7 @@ export class SubmissionController {
 	}
 
 	createSubmission = async (
-		request: FastifyRequest<{ Body: CreateSubmissionRequest }>,
+		request: FastifyRequest<{ Body: CreateSubmissionRequestDTO }>,
 		reply: FastifyReply
 	) => {
 		const submission = await this.submissionService.createSubmission(request.body);
@@ -25,7 +25,7 @@ export class SubmissionController {
 	updateSubmissionStatus = async (
 		request: FastifyRequest<{
 			Params: GetSubmissionParams;
-			Body: UpdateSubmissionStatusRequest;
+			Body: UpdateSubmissionStatusRequestDTO;
 		}>,
 		reply: FastifyReply
 	) => {

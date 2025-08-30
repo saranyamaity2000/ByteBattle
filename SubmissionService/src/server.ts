@@ -1,20 +1,26 @@
 import fastify, { FastifyError } from "fastify";
-import { envConfig } from "./configs";
-import fastifyMongo from "@fastify/mongodb";
 import { v1Routes } from "./router/v1";
 import { fastifyServerOptions } from "./configs/server.config";
+import { connectDB } from "./configs/db.config";
 
 export async function buildServer() {
-	const app = fastify(fastifyServerOptions);
-
-	// connect to MongoDB
-	await app.register(fastifyMongo, {
-		url: envConfig.MONGODB_URI,
+	const app = fastify({
+		...fastifyServerOptions,
+		ajv: {
+			customOptions: {
+				coerceTypes: false, // Disable type coercion
+				removeAdditional: false, // Don't remove additional properties
+				useDefaults: true, // Still use default values
+				allErrors: true, // Report all validation errors
+			},
+		},
 	});
-	app.log.info("✅ Connected to MongoDB");
+
+	// database connection
+	await connectDB(app);
 
 	// basic routes registering
-	await app.register(v1Routes, {
+	app.register(v1Routes, {
 		prefix: "/api/v1",
 	});
 
@@ -38,5 +44,6 @@ export async function buildServer() {
 		});
 	});
 
+	await app.ready();
 	return app;
 }
