@@ -1,0 +1,29 @@
+{
+	"name": "submissionservice",
+	"version": "1.0.0",
+	"description": "",
+	"main": "dist/index.js",
+	"scripts": {
+		"build": "esbuild src/index.ts --bundle --platform=node --outfile=dist/index.js --packages=external",
+		"start": "node dist/index.js",
+		"dev": "tsx watch src/index.ts",
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"devDependencies": {
+		"@types/node": "^24.3.0",
+		"esbuild": "^0.25.9",
+		"nodemon": "^3.1.10",
+		"ts-node": "^10.9.2",
+		"tsx": "^4.20.5",
+		"typescript": "^5.9.2"
+	},
+	"dependencies": {
+		"@fastify/error": "^4.2.0",
+		"@fastify/mongodb": "^9.0.2",
+		"dotenv": "^17.2.1",
+		"fastify": "^5.5.0"
+	}
+}
