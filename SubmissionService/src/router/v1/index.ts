@@ -3,6 +3,8 @@ import { submissionRoutes } from "./submissions.router";
 import { SubmissionController } from "../../controllers/submission.controller";
 import { SubmissionService } from "../../services/submission.service";
 import { SubmissionRepository } from "../../repositories/submission.repository";
+import RabbitMQPublisherService from "../../services/submission.publisher.service";
+import { connectToRabbitMQ } from "../../configs/rabitmq.config";
 
 export async function v1Routes(fastify: FastifyInstance) {
 	fastify.get("/api/v1/health", async (_request, reply) => {
@@ -12,10 +14,15 @@ export async function v1Routes(fastify: FastifyInstance) {
 			service: "submission-service",
 		});
 	});
+
 	fastify.register(submissionRoutes, {
 		prefix: "/submissions",
 		submissionController: new SubmissionController(
-			new SubmissionService(fastify, new SubmissionRepository())
+			new SubmissionService(
+				fastify.log,
+				new SubmissionRepository(),
+				new RabbitMQPublisherService(fastify.log, await connectToRabbitMQ(fastify))
+			)
 		),
 	});
 }

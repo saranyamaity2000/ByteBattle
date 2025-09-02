@@ -17,10 +17,9 @@ export const connectDB = async (app: FastifyInstance) => {
 			app.log.warn("MongoDB disconnected");
 		});
 
-		process.on("SIGINT", async () => {
+		app.addHook("onClose", async () => {
 			await mongoose.connection.close();
 			app.log.info("MongoDB connection closed");
-			process.exit(0);
 		});
 	} catch (error) {
 		app.log.error(`Failed to connect to mongodb: ${String(error)}`);

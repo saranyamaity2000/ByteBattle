@@ -1,7 +1,7 @@
 import {
 	ISubmissionResult,
 	SubmissionStatus,
-	SupportedSubmissionLang
+	SupportedSubmissionLang,
 } from "../models/submission.model";
 
 export interface CreateSubmissionRequestDTO {
@@ -24,4 +24,10 @@ export interface SubmissionResponseDTO {
 export interface UpdateSubmissionStatusRequestDTO {
 	status: SubmissionStatus;
 	result?: ISubmissionResult;
+}
+
+export interface SubmissionQueueMessageDTO {
+	id: string;
+	code: string;
+	lang: string;
 }
