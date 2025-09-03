@@ -1,5 +1,10 @@
-### RabbitMQ using Docker
+### How to start RabbitMQ using Docker
 
-to start :  `docker compose up -d`
+1. `make sure docker-desktop is install`
+2. to start :  `npm run rabbitmq-start`
+3. to stop : `npm run rabbitmq-stop`
 
-to stop : `docker compose down`
+### How to start Server
+
+1. start RabbitMQ Server by `npm run rabbitmq-start`
+2. start server by `npm run start`
