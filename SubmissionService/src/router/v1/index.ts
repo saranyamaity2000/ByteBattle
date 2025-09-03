@@ -1,9 +1,10 @@
+import { MessagingQueueService } from "./../../services/mq.service";
 import { FastifyInstance } from "fastify";
 import { submissionRoutes } from "./submissions.router";
 import { SubmissionController } from "../../controllers/submission.controller";
 import { SubmissionService } from "../../services/submission.service";
 import { SubmissionRepository } from "../../repositories/submission.repository";
-import RabbitMQPublisherService from "../../services/submission.publisher.service";
+import SubmissionPublisherService from "../../services/submission.publisher.service";
 import { connectToRabbitMQ } from "../../configs/rabitmq.config";
 
 export async function v1Routes(fastify: FastifyInstance) {
@@ -21,7 +22,10 @@ export async function v1Routes(fastify: FastifyInstance) {
 			new SubmissionService(
 				fastify.log,
 				new SubmissionRepository(),
-				new RabbitMQPublisherService(fastify.log, await connectToRabbitMQ(fastify))
+				new SubmissionPublisherService(
+					fastify.log,
+					new MessagingQueueService(await connectToRabbitMQ(fastify))
+				)
 			)
 		),
 	});

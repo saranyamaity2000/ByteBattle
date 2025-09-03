@@ -6,8 +6,8 @@ import {
 	UpdateSubmissionStatusRequestDTO,
 } from "../dtos/submission.dto";
 import { NotFoundError } from "../utils/errors";
-import { SubmissionPublisherService } from "./submission.publisher.service";
 import { constantConfig } from "../configs";
+import SubmissionPublisherService from "./submission.publisher.service";
 
 export class SubmissionService {
 	constructor(
@@ -21,7 +21,7 @@ export class SubmissionService {
 	): Promise<SubmissionResponseDTO> {
 		const submission = await this.submissionRepository.createSubmission(submissionData);
 		this.logger.info(`Created submission: ${JSON.stringify(submission)}`);
-		await this.publisherService.publishMessage(constantConfig.SUBMISSION_QUEUE, {
+		await this.publisherService.publishSubmission(constantConfig.SUBMISSION_QUEUE, {
 			id: submission.id,
 			code: submission.code,
 			lang: submission.lang,
