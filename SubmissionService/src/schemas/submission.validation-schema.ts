@@ -1,7 +1,8 @@
+import { FastifySchema } from "fastify";
 import { SupportedSubmissionLang, SubmissionVerdict } from "../models/submission.model";
 
 // JSON Schema for creating a submission
-export const createSubmissionSchema = {
+export const createSubmissionSchema: FastifySchema["body"] = {
 	type: "object",
 	required: ["problemId", "lang", "code"],
 	properties: {
@@ -28,7 +29,7 @@ export const createSubmissionSchema = {
 } as const;
 
 // JSON Schema for updating submission status
-export const updateSubmissionSchema = {
+export const updateSubmissionSchema: FastifySchema["body"] = {
 	type: "object",
 	required: ["status"],
 	properties: {
@@ -76,7 +77,7 @@ export const updateSubmissionSchema = {
 } as const;
 
 // JSON Schema for route parameters
-export const submissionParamsSchema = {
+export const submissionParamsSchema: FastifySchema["params"] = {
 	type: "object",
 	required: ["id"],
 	properties: {
