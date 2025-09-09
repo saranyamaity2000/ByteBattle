@@ -22,7 +22,8 @@ export class SubmissionService {
 		const submission = await this.submissionRepository.createSubmission(submissionData);
 		this.logger.info(`Created submission: ${JSON.stringify(submission)}`);
 		await this.publisherService.publishSubmission(constantConfig.SUBMISSION_QUEUE, {
-			id: submission.id,
+			problemId: submission.problemId,
+			submissionId: submission.id,
 			code: submission.code,
 			lang: submission.lang,
 		});
