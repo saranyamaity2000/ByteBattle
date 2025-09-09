@@ -27,7 +27,8 @@ export interface UpdateSubmissionStatusRequestDTO {
 }
 
 export interface SubmissionQueueMessageDTO {
-	id: string;
+	problemId: string;
+	submissionId: string;
 	code: string;
 	lang: string;
 }
