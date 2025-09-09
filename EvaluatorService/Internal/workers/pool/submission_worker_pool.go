@@ -24,7 +24,7 @@ type SubmissionWorkerPool struct {
 }
 
 // NewSubmissionWorkerPool creates a new worker pool
-func NewSubmissionWorkerPool(rabbitQueueConnection *rabbitmq.Connection, queueName string, workerCount int) *SubmissionWorkerPool {
+func NewSubmissionWorkerPool(rabbitQueueConnection *rabbitmq.Connection, queueName string, workerCount int, submissionService services.SubmissionService) *SubmissionWorkerPool {
 	ctx, cancel := context.WithCancel(context.Background())
 	return &SubmissionWorkerPool{
 		rabbitQueueConnection: rabbitQueueConnection,
@@ -32,6 +32,7 @@ func NewSubmissionWorkerPool(rabbitQueueConnection *rabbitmq.Connection, queueNa
 		workerCount:           workerCount,
 		ctx:                   ctx,
 		cancel:                cancel,
+		submissionService:     submissionService,
 	}
 }
 
