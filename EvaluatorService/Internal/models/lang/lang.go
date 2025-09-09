@@ -10,14 +10,14 @@ type Language string
 
 // Supported languages as constants (enum-like behavior)
 const (
-	Python    Language = "python"
+	Python3   Language = "python3"
 	CPlusPlus Language = "c++"
 )
 
 // IsValid checks if the language is supported
 func (l Language) IsValid() bool {
 	switch l {
-	case Python, CPlusPlus:
+	case Python3, CPlusPlus:
 		return true
 	default:
 		return false

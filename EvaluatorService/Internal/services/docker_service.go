@@ -1,7 +1,7 @@
 package services
 
 import (
-	"fmt"
+	"log"
 
 	"github.com/docker/docker/client"
 	"maitysaranya.com/EvaluatorService/Internal/factory"
@@ -26,7 +26,7 @@ func (d *dockerServiceImpl) PullImageIfNotExists(imageName string) error {
 
 func (d *dockerServiceImpl) RunCodeInContainer(codeLang lang.Language, code string, constraint models.ProblemConstraint) (string, error) {
 	// TODO: Implement container running logic
-	fmt.Printf("Running code in container with language %s\n", codeLang.String())
+	log.Printf("Running code in container with language %s\n", codeLang.String())
 	return "", nil
 }
 

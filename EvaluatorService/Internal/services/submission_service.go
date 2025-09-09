@@ -15,7 +15,7 @@ type submissionServiceImpl struct {
 }
 
 func (s *submissionServiceImpl) EvaluateSubmission(submission models.ProblemSubmission) (string, error) {
-	fmt.Printf("Evaluating submission: ID=%v, Language=%v\n", submission.SubmissionID, submission.Language)
+	fmt.Printf("Evaluating submission: ID=%s, Language=%s\n", submission.SubmissionID, submission.Language)
 
 	// Use the Docker service to run the code in a container
 	// TODO : Implement proper constraints and remaining parts of the logic

@@ -7,9 +7,9 @@ import (
 )
 
 type ProblemSubmission struct {
-	SubmissionID string   `json:"submission_id"`
-	ProblemID    string   `json:"problem_id"`
-	Code         string   `json:"code"`
+	SubmissionID string        `json:"submissionId"`
+	ProblemID    string        `json:"problemId"`
+	Code         string        `json:"code"`
 	Language     lang.Language `json:"lang"`
 }
 

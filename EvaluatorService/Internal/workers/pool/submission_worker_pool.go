@@ -120,7 +120,8 @@ func (pool *SubmissionWorkerPool) startWorker(workerID int) {
 			if err := pool.processRawSubmission(workerID, message.Body); err != nil {
 				log.Printf("Worker %d: Failed to process submission: %v", workerID, err)
 				// Reject and requeue the message
-				message.Nack(false, true)
+				// message.Nack(false, true)
+				message.Nack(false, false) // we won't retry, let user re-submit.
 			} else {
 				log.Printf("Worker %d: Successfully processed submission", workerID)
 				// Acknowledge the message

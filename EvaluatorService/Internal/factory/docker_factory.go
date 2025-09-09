@@ -25,7 +25,7 @@ func (d *dockerCodeFactoryImpl) GetImageForLanguage(language lang.Language) (str
 
 func (d *dockerCodeFactoryImpl) GetCommandForLanguage(language lang.Language, code string) ([]string, error) {
 	switch language {
-	case lang.Python:
+	case lang.Python3:
 		return []string{"python", "-c", code}, nil
 	case lang.CPlusPlus:
 		return []string{"/bin/sh", "-c", fmt.Sprintf("echo '%s' > /tmp/code.cpp && g++ /tmp/code.cpp -o /tmp/a.out && /tmp/a.out", code)}, nil
@@ -37,7 +37,7 @@ func (d *dockerCodeFactoryImpl) GetCommandForLanguage(language lang.Language, co
 func NewDockerCodeFactory() DockerCodeFactory {
 	return &dockerCodeFactoryImpl{
 		languageToImage: map[lang.Language]string{
-			lang.Python:    "python:3.9-slim",
+			lang.Python3:   "python:3.9-slim",
 			lang.CPlusPlus: "gcc:latest",
 		},
 	}
