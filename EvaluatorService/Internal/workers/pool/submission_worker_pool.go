@@ -8,14 +8,9 @@ import (
 	"sync"
 
 	rabbitmq "github.com/rabbitmq/amqp091-go"
+	"maitysaranya.com/EvaluatorService/Internal/models"
+	"maitysaranya.com/EvaluatorService/Internal/services"
 )
-
-// Submission represents a code submission to evaluate
-type Submission struct {
-	ID       string `json:"id"`
-	Code     string `json:"code"`
-	Language string `json:"lang"`
-}
 
 // SubmissionWorkerPool manages n workers, each with its own RabbitMQ channel
 type SubmissionWorkerPool struct {
@@ -25,10 +20,11 @@ type SubmissionWorkerPool struct {
 	ctx                   context.Context
 	cancel                context.CancelFunc
 	wg                    sync.WaitGroup
+	submissionService     services.SubmissionService
 }
 
 // NewSubmissionWorkerPool creates a new worker pool
-func NewSubmissionWorkerPool(rabbitQueueConnection *rabbitmq.Connection, queueName string, workerCount int) *SubmissionWorkerPool {
+func NewSubmissionWorkerPool(rabbitQueueConnection *rabbitmq.Connection, queueName string, workerCount int, submissionService services.SubmissionService) *SubmissionWorkerPool {
 	ctx, cancel := context.WithCancel(context.Background())
 	return &SubmissionWorkerPool{
 		rabbitQueueConnection: rabbitQueueConnection,
@@ -36,6 +32,7 @@ func NewSubmissionWorkerPool(rabbitQueueConnection *rabbitmq.Connection, queueNa
 		workerCount:           workerCount,
 		ctx:                   ctx,
 		cancel:                cancel,
+		submissionService:     submissionService,
 	}
 }
 
@@ -123,7 +120,8 @@ func (pool *SubmissionWorkerPool) startWorker(workerID int) {
 			if err := pool.processRawSubmission(workerID, message.Body); err != nil {
 				log.Printf("Worker %d: Failed to process submission: %v", workerID, err)
 				// Reject and requeue the message
-				message.Nack(false, true)
+				// message.Nack(false, true)
+				message.Nack(false, false) // we won't retry, let user re-submit.
 			} else {
 				log.Printf("Worker %d: Successfully processed submission", workerID)
 				// Acknowledge the message
@@ -135,23 +133,20 @@ func (pool *SubmissionWorkerPool) startWorker(workerID int) {
 
 // processRawSubmission handles a single submission
 func (pool *SubmissionWorkerPool) processRawSubmission(workerID int, rawSubmissionData []byte) error {
-	var submission Submission
+	var submission models.ProblemSubmission
 
 	if err := json.Unmarshal(rawSubmissionData, &submission); err != nil {
 		return fmt.Errorf("failed to parse submission JSON: %w", err)
 	}
 
-	log.Printf("Worker %d: Processing submission %s (%s)", workerID, submission.ID, submission.Language)
+	log.Printf("Worker %d: Processing submission %s (%s)", workerID, submission.SubmissionID, submission.Language)
 	log.Printf("Worker %d: Code: %s", workerID, submission.Code)
 
-	result := pool.evaluateCode(submission)
+	result, err := pool.submissionService.EvaluateSubmission(submission)
 
-	log.Printf("Worker %d: Evaluation result for %s: %s", workerID, submission.ID, result)
-
+	if err != nil {
+		return fmt.Errorf("evaluation failed: %w", err)
+	}
+	log.Printf("Worker %d: Evaluation succeeded for %s: %s", workerID, submission.SubmissionID, result)
 	return nil
-}
-
-// evaluateCode simulates code evaluation
-func (pool *SubmissionWorkerPool) evaluateCode(submission Submission) string {
-	return fmt.Sprintf("SUCCESS: %s code executed successfully", submission.Language)
 }

@@ -8,6 +8,8 @@ import (
 	"syscall"
 
 	"maitysaranya.com/EvaluatorService/Internal/config"
+	"maitysaranya.com/EvaluatorService/Internal/factory"
+	"maitysaranya.com/EvaluatorService/Internal/services"
 	"maitysaranya.com/EvaluatorService/Internal/workers/pool"
 )
 
@@ -18,10 +20,14 @@ func SetupRabbitMQWorkers() {
 	}
 	defer rabbitConn.Close()
 
+	dockerFactory := factory.NewDockerCodeFactory()
+	dockerService := services.NewDockerService(dockerFactory)
+	submissionService := services.NewSubmissionService(dockerService)
 	workerPool := pool.NewSubmissionWorkerPool(
 		rabbitConn,
 		config.AppConfig.QueueName,
 		config.AppConfig.PoolSize,
+		submissionService,
 	)
 
 	wg, err := workerPool.Start()
