@@ -1,8 +1,12 @@
 package services
 
 import (
+	"context"
+	"io"
 	"log"
+	"os"
 
+	"github.com/docker/docker/api/types/image"
 	"github.com/docker/docker/client"
 	"maitysaranya.com/EvaluatorService/Internal/factory"
 	"maitysaranya.com/EvaluatorService/Internal/models"
@@ -10,17 +14,31 @@ import (
 )
 
 type DockerService interface {
-	PullImageIfNotExists(imageName string) error
+	PullImage(imageName string) error
 	RunCodeInContainer(codeLang lang.Language, code string, constraint models.ProblemConstraint) (string, error)
 }
 
 type dockerServiceImpl struct {
 	dockerCodeFactory factory.DockerCodeFactory
-	dockerClient      *client.Client
+	dockerCli         *client.Client
 }
 
-func (d *dockerServiceImpl) PullImageIfNotExists(imageName string) error {
-	// TODO: Implement image pulling logic
+func (d *dockerServiceImpl) PullImage(imageName string) error {
+	rc, err := d.dockerCli.ImagePull(context.Background(), imageName, image.PullOptions{})
+	if err != nil {
+		log.Printf("pull image %q: %v", imageName, err)
+		return err
+	}
+	defer rc.Close()
+
+	// Log the progress of pulling the image
+	log.Printf("Pulling image %s...", imageName)
+	_, err = io.Copy(os.Stdout, rc)
+	if err != nil {
+		log.Printf("Error reading pull progress: %v", err)
+		return err
+	}
+	log.Printf("Successfully pulled image %s", imageName)
 	return nil
 }
 
@@ -36,7 +54,7 @@ func NewDockerService(dockerCodeFactory factory.DockerCodeFactory) DockerService
 		panic(err)
 	}
 	return &dockerServiceImpl{
-		dockerClient:      cli,
+		dockerCli:         cli,
 		dockerCodeFactory: dockerCodeFactory,
 	}
 }

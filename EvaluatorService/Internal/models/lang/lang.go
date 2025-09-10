@@ -14,6 +14,8 @@ const (
 	CPlusPlus Language = "c++"
 )
 
+var AvailableCodingLanguages = []Language{Python3, CPlusPlus}
+
 // IsValid checks if the language is supported
 func (l Language) IsValid() bool {
 	switch l {
