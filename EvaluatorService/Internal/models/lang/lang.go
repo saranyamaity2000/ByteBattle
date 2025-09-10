@@ -10,11 +10,13 @@ type Language string
 
 // Supported languages as constants (enum-like behavior)
 const (
-	Python3   Language = "python3"
-	CPlusPlus Language = "c++"
+	Python3    Language = "python3"
+	CPlusPlus  Language = "c++"
+	Java       Language = "java"       // not yet supported
+	JavaScript Language = "javascript" // not yet supported
 )
 
-var AvailableCodingLanguages = []Language{Python3, CPlusPlus}
+var SupportedCodingLanguages = []Language{Python3, CPlusPlus}
 
 // IsValid checks if the language is supported
 func (l Language) IsValid() bool {

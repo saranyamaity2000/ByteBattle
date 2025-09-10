@@ -13,8 +13,8 @@ import (
 	"maitysaranya.com/EvaluatorService/Internal/models/lang"
 )
 
-type DockerService interface {
-	PullImage(imageName string) error
+type DockerCodeRunService interface {
+	PullImageByCodingLang(codingLang lang.Language) error
 	RunCodeInContainer(codeLang lang.Language, code string, constraint models.ProblemConstraint) (string, error)
 }
 
@@ -23,7 +23,12 @@ type dockerServiceImpl struct {
 	dockerCli         *client.Client
 }
 
-func (d *dockerServiceImpl) PullImage(imageName string) error {
+func (d *dockerServiceImpl) PullImageByCodingLang(codingLang lang.Language) error {
+	imageName, err := d.dockerCodeFactory.GetImageForLanguage(codingLang)
+	if err != nil {
+		return err
+	}
+
 	rc, err := d.dockerCli.ImagePull(context.Background(), imageName, image.PullOptions{})
 	if err != nil {
 		log.Printf("pull image %q: %v", imageName, err)
@@ -48,7 +53,7 @@ func (d *dockerServiceImpl) RunCodeInContainer(codeLang lang.Language, code stri
 	return "", nil
 }
 
-func NewDockerService(dockerCodeFactory factory.DockerCodeFactory) DockerService {
+func NewDockerService(dockerCodeFactory factory.DockerCodeFactory) DockerCodeRunService {
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
 		panic(err)

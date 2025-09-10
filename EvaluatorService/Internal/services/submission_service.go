@@ -11,7 +11,7 @@ type SubmissionService interface {
 }
 
 type submissionServiceImpl struct {
-	dockerService DockerService
+	dockerService DockerCodeRunService
 }
 
 func (s *submissionServiceImpl) EvaluateSubmission(submission models.ProblemSubmission) (string, error) {
@@ -26,7 +26,7 @@ func (s *submissionServiceImpl) EvaluateSubmission(submission models.ProblemSubm
 	return result, nil
 }
 
-func NewSubmissionService(dockerService DockerService) SubmissionService {
+func NewSubmissionService(dockerService DockerCodeRunService) SubmissionService {
 	return &submissionServiceImpl{
 		dockerService: dockerService,
 	}
