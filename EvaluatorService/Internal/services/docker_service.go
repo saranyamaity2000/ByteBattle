@@ -2,10 +2,13 @@ package services
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"log"
 	"os"
+	"time"
 
+	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/image"
 	"github.com/docker/docker/client"
 	"maitysaranya.com/EvaluatorService/Internal/factory"
@@ -48,9 +51,77 @@ func (d *dockerServiceImpl) PullImageByCodingLang(codingLang lang.Language) erro
 }
 
 func (d *dockerServiceImpl) RunCodeInContainer(codeLang lang.Language, code string, constraint models.ProblemConstraint) (string, error) {
-	// TODO: Implement container running logic
-	log.Printf("Running code in container with language %s\n", codeLang.String())
-	return "", nil
+	image, err := d.dockerCodeFactory.GetImageForLanguage(codeLang)
+	if err != nil {
+		return "", err
+	}
+
+	cmd, err := d.dockerCodeFactory.GetCommandForLanguage(codeLang, code)
+	if err != nil {
+		return "", err
+	}
+
+	// container configuration
+	containerConfig := &container.Config{
+		Image: image,
+		Cmd:   cmd,   // the command while running the container
+		Tty:   false, // no interactive terminal needed
+	}
+
+	// Host configuration with resource limits
+	hostConfig := &container.HostConfig{
+		Resources: container.Resources{
+			Memory: int64(constraint.MemoryLimitMb) * 1024 * 1024, // Convert MB to bytes
+		},
+		AutoRemove: true, // this will automatically remove container after execution
+	}
+
+	// Create container with timeout context
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*time.Duration(constraint.TimeLimitSec))
+	defer cancel()
+
+	resp, err := d.dockerCli.ContainerCreate(ctx, containerConfig, hostConfig, nil, nil, "")
+	if err != nil {
+		return "", err
+	}
+
+	// Start the container
+	if err := d.dockerCli.ContainerStart(ctx, resp.ID, container.StartOptions{}); err != nil {
+		return "", err
+	}
+
+	// Wait for container to finish
+	statusCh, errCh := d.dockerCli.ContainerWait(ctx, resp.ID, container.WaitConditionNotRunning)
+	select {
+	case err := <-errCh:
+		if err != nil {
+			// Check if the error is due to context timeout (TLE)
+			if ctx.Err() == context.DeadlineExceeded {
+				return "", fmt.Errorf("terminated due to Time Limit Exceeded (TLE)")
+			}
+			return "", err
+		}
+	case waitResp := <-statusCh:
+		if waitResp.StatusCode == 137 {
+			return "", fmt.Errorf("terminated due to Memory Limit Exceeded (MLE)")
+		}
+	}
+
+	out, err := d.dockerCli.ContainerLogs(ctx, resp.ID, container.LogsOptions{
+		ShowStdout: true,
+		ShowStderr: true,
+	})
+	if err != nil {
+		return "", err
+	}
+	defer out.Close()
+
+	output, err := io.ReadAll(out)
+	if err != nil {
+		return "", err
+	}
+
+	return string(output), nil
 }
 
 func NewDockerService(dockerCodeFactory factory.DockerCodeFactory) DockerCodeRunService {

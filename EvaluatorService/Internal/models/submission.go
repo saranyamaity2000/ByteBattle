@@ -14,8 +14,8 @@ type ProblemSubmission struct {
 }
 
 type ProblemConstraint struct {
-	TimeLimit   time.Duration
-	MemoryLimit uint64 // in bytes
+	TimeLimitSec  time.Duration
+	MemoryLimitMb int64 // in bytes
 }
 
 type ExecutionResult struct {
