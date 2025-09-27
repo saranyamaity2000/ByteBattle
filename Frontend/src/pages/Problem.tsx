@@ -1,16 +1,16 @@
 import { useState, useCallback } from "react";
 import { useParams, Link } from "react-router-dom";
-import { getProblemById } from "../data/problems";
+import { useProblem } from "../hooks/useProblems";
 import ResizablePane from "../components/ResizablePane";
 import LightCodeEditor from "../components/LightCodeEditor";
 import EvaluationResult from "../components/EvaluationResult";
 import Loader from "../components/Loader";
 import { Button } from "../components/ui/button";
-import { ArrowLeft, CheckCircle, Clock, XCircle } from "lucide-react";
+import { ArrowLeft, CheckCircle, Clock, XCircle, AlertCircle } from "lucide-react";
 
 export default function Problem() {
 	const { problemId } = useParams<{ problemId: string }>();
-	const problem = problemId ? getProblemById(problemId) : null;
+	const { problem, isLoading, error } = useProblem(problemId);
 
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [evaluationResult, setEvaluationResult] = useState<{
@@ -75,6 +75,35 @@ export default function Problem() {
 		setShowResult(false);
 		setEvaluationResult(null);
 	}, []);
+
+	if (isLoading) {
+		return (
+			<div className="min-h-screen bg-gray-100 flex items-center justify-center">
+				<div className="text-center">
+					<div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+					<p className="text-gray-600">Loading problem...</p>
+				</div>
+			</div>
+		);
+	}
+
+	if (error) {
+		return (
+			<div className="min-h-screen bg-gray-100 flex items-center justify-center">
+				<div className="text-center max-w-md">
+					<AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+					<h2 className="text-2xl font-bold text-gray-900 mb-2">Error Loading Problem</h2>
+					<p className="text-gray-600 mb-4">{error}</p>
+					<Link to="/problems">
+						<Button>
+							<ArrowLeft className="h-4 w-4 mr-2" />
+							Back to Problems
+						</Button>
+					</Link>
+				</div>
+			</div>
+		);
+	}
 
 	if (!problem) {
 		return (

@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
-import { problems, type Problem } from "../data/problems";
+import { useProblems } from "../hooks/useProblems";
+import { type Problem } from "../types/problem";
 import { Button } from "../components/ui/button";
 import {
 	Select,
@@ -9,37 +10,37 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "../components/ui/select";
-import { ArrowLeft, Filter } from "lucide-react";
+import { ArrowLeft, Filter, AlertCircle, RefreshCw } from "lucide-react";
 
 export default function Problems() {
-	const [filteredProblems, setFilteredProblems] = useState<Problem[]>(problems);
+	const { problems, isLoading, error, refetch } = useProblems();
 	const [difficultyFilter, setDifficultyFilter] = useState<string>("all");
 	const [categoryFilter, setCategoryFilter] = useState<string>("all");
 
-	const categories = Array.from(new Set(problems.map((p) => p.category)));
+	const categories = useMemo(() => {
+		return Array.from(new Set(problems.map((p) => p.category)));
+	}, [problems]);
 
-	const filterProblems = (difficulty: string, category: string) => {
+	const filteredProblems = useMemo(() => {
 		let filtered = problems;
 
-		if (difficulty !== "all") {
-			filtered = filtered.filter((p) => p.difficulty === difficulty);
+		if (difficultyFilter !== "all") {
+			filtered = filtered.filter((p) => p.difficulty === difficultyFilter);
 		}
 
-		if (category !== "all") {
-			filtered = filtered.filter((p) => p.category === category);
+		if (categoryFilter !== "all") {
+			filtered = filtered.filter((p) => p.category === categoryFilter);
 		}
 
-		setFilteredProblems(filtered);
-	};
+		return filtered;
+	}, [problems, difficultyFilter, categoryFilter]);
 
 	const handleDifficultyFilter = (value: string) => {
 		setDifficultyFilter(value);
-		filterProblems(value, categoryFilter);
 	};
 
 	const handleCategoryFilter = (value: string) => {
 		setCategoryFilter(value);
-		filterProblems(difficultyFilter, value);
 	};
 
 	const getDifficultyColor = (difficulty: Problem["difficulty"]) => {
@@ -54,6 +55,35 @@ export default function Problems() {
 				return "bg-gray-100 text-gray-800 border-gray-200";
 		}
 	};
+
+	if (isLoading) {
+		return (
+			<div className="min-h-screen bg-gradient-to-br from-slate-50 to-gray-100 flex items-center justify-center">
+				<div className="text-center">
+					<div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+					<p className="text-gray-600">Loading problems...</p>
+				</div>
+			</div>
+		);
+	}
+
+	if (error) {
+		return (
+			<div className="min-h-screen bg-gradient-to-br from-slate-50 to-gray-100 flex items-center justify-center">
+				<div className="text-center max-w-md">
+					<AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+					<h2 className="text-2xl font-bold text-gray-900 mb-2">
+						Error Loading Problems
+					</h2>
+					<p className="text-gray-600 mb-4">{error}</p>
+					<Button onClick={refetch} className="flex items-center gap-2">
+						<RefreshCw className="h-4 w-4" />
+						Try Again
+					</Button>
+				</div>
+			</div>
+		);
+	}
 
 	return (
 		<div className="min-h-screen bg-gradient-to-br from-slate-50 to-gray-100">
