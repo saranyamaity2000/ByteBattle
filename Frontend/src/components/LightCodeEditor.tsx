@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useState, useCallback, useRef } from "react";
 import { Editor, type OnMount } from "@monaco-editor/react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { Button } from "./ui/button";
@@ -17,7 +17,11 @@ export default function LightCodeEditor({
 	isSubmitting,
 }: LightCodeEditorProps) {
 	const [language, setLanguage] = useState<string>("cpp");
-	const [code, setCode] = useState<string>(initialCode[language] || "");
+	// Store code for each language separately
+	const [codeByLanguage, setCodeByLanguage] = useState<Record<string, string>>(() => ({
+		cpp: initialCode.cpp || "// Your code here",
+		python: initialCode.python || "# Your code here",
+	}));
 	const editorRef = useRef<EditorInstance | null>(null);
 
 	const languages = [
@@ -25,18 +29,22 @@ export default function LightCodeEditor({
 		{ id: "python", name: "Python", monacoId: "python" },
 	];
 
-	useEffect(() => {
-		if (initialCode[language]) {
-			setCode(initialCode[language]);
-		}
-	}, [language, initialCode]);
+	// Get current code for the selected language
+	const currentCode = codeByLanguage[language];
 
-	const handleLanguageChange = useCallback(
-		(newLanguage: string) => {
-			setLanguage(newLanguage);
-			setCode(initialCode[newLanguage] || "");
+	const handleLanguageChange = useCallback((newLanguage: string) => {
+		setLanguage(newLanguage);
+	}, []);
+
+	const handleCodeChange = useCallback(
+		(value: string | undefined) => {
+			const newValue = value || "";
+			setCodeByLanguage((prev) => ({
+				...prev,
+				[language]: newValue,
+			}));
 		},
-		[initialCode]
+		[language]
 	);
 
 	const handleEditorDidMount: OnMount = useCallback((editor) => {
@@ -77,8 +85,8 @@ export default function LightCodeEditor({
 	}, []);
 
 	const handleSubmit = useCallback(() => {
-		onSubmit(code, language);
-	}, [code, language, onSubmit]);
+		onSubmit(codeByLanguage[language], language);
+	}, [codeByLanguage, language, onSubmit]);
 
 	return (
 		<div className="h-full flex flex-col bg-white">
@@ -110,8 +118,8 @@ export default function LightCodeEditor({
 				<Editor
 					height="100%"
 					language={languages.find((l) => l.id === language)?.monacoId || "cpp"}
-					value={code}
-					onChange={(value) => setCode(value || "")}
+					value={currentCode}
+					onChange={handleCodeChange}
 					onMount={handleEditorDidMount}
 					theme="vs-light"
 					loading={
