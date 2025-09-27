@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 type ServerConfig = {
 	PORT: number;
 	MONGO_URI: string;
+	ALLOWED_ORIGINS: string[];
 	AWS: {
 		ACCESS_KEY_ID: string;
 		ACCESS_KEY_SECRET: string;
@@ -28,4 +29,7 @@ export const serverConfig: ServerConfig = {
 		REGION: process.env.AWS_REGION || "N/A",
 		BUCKET_NAME: process.env.AWS_BUCKET_NAME || "N/A",
 	},
+	ALLOWED_ORIGINS: process.env.ALLOWED_ORIGINS
+		? process.env.ALLOWED_ORIGINS.split(",")
+		: ["http://localhost:5173"],
 };
