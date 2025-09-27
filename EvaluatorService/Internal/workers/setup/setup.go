@@ -9,6 +9,7 @@ import (
 
 	"maitysaranya.com/EvaluatorService/Internal/config"
 	"maitysaranya.com/EvaluatorService/Internal/factory"
+	"maitysaranya.com/EvaluatorService/Internal/models/lang"
 	"maitysaranya.com/EvaluatorService/Internal/services"
 	"maitysaranya.com/EvaluatorService/Internal/workers/pool"
 )
@@ -22,6 +23,14 @@ func SetupRabbitMQWorkers() {
 
 	dockerFactory := factory.NewDockerCodeFactory()
 	dockerService := services.NewDockerService(dockerFactory)
+
+	for _, lang := range lang.SupportedCodingLanguages {
+		err := dockerService.PullImageByCodingLang(lang)
+		if err != nil {
+			log.Fatalf("Failed to pull image for language %s: %v", lang, err)
+		}
+	}
+
 	submissionService := services.NewSubmissionService(dockerService)
 	workerPool := pool.NewSubmissionWorkerPool(
 		rabbitConn,
