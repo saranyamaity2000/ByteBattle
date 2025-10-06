@@ -37,6 +37,27 @@ class TestcaseController {
 			testcaseUrl,
 		});
 	};
+
+	downloadTestCaseFile = async (req: Request, res: Response) => {
+		const problemSlug = req.params.problemSlug as string;
+		const problem = await this.problemService.getProblemBySlug(problemSlug);
+		if (!problem) {
+			throw new NotFoundError(`Problem with slug '${problemSlug}' not found`);
+		}
+		if (!problem.testcaseUrl) {
+			throw new NotFoundError(`No test cases found for problem with slug '${problemSlug}'`);
+		}
+
+		logger.info("Starting testcase download process");
+		const { stream, contentType, fileName } = await this.testcaseService.downloadTestCaseFromS3(
+			problem.testcaseUrl
+		);
+		logger.info("Testcase download process completed successfully");
+
+		res.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
+		res.setHeader("Content-Type", contentType);
+		stream.pipe(res);
+	};
 }
 
 const problemRepository = new ProblemRepository();

@@ -9,3 +9,5 @@ testcaseRouter.post(
 	uploadTestcaseFileMiddleware,
 	testcaseController.uploadTestCaseFile
 );
+
+testcaseRouter.get("/download/:problemSlug", testcaseController.downloadTestCaseFile);
