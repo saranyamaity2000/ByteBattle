@@ -39,6 +39,14 @@ export default function Navbar() {
 							<Button variant="ghost" className="text-gray-600 hover:text-gray-900">
 								About
 							</Button>
+							<Link to="/craft-problem">
+								<Button
+									variant="ghost"
+									className="text-gray-600 hover:text-gray-900"
+								>
+									Craft a Problem
+								</Button>
+							</Link>
 						</div>
 					</div>
 

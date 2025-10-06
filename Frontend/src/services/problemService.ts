@@ -69,6 +69,26 @@ export interface ApiResponse<T> {
 	data: T;
 }
 
+export interface CreateProblemPayload {
+	title: string;
+	slug?: string;
+	statement: string;
+	difficulty: "easy" | "medium" | "hard";
+	examples: {
+		input: string;
+		output: string;
+		explanation?: string;
+	}[];
+	constraints?: string[];
+	timeLimitMs?: number;
+	memoryLimitKb?: number;
+	author?: string;
+	isPremium?: boolean;
+	editorial?: string;
+	topicTags?: string[];
+	companyTags?: string[];
+}
+
 class ProblemService {
 	async getProblems(): Promise<ApiProblem[]> {
 		try {
@@ -90,6 +110,16 @@ class ProblemService {
 			}
 			console.error("Error fetching problem by ID:", error);
 			throw new Error(`Failed to fetch problem with ID: ${id}`);
+		}
+	}
+
+	async createProblem(payload: CreateProblemPayload): Promise<ApiProblem> {
+		try {
+			const response = await apiClient.post<ApiResponse<ApiProblem>>("/problems", payload);
+			return response.data.data;
+		} catch (error) {
+			console.error("Error creating problem:", error);
+			throw error;
 		}
 	}
 }

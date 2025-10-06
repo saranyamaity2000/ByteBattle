@@ -4,6 +4,8 @@ import Navbar from "./components/Navbar";
 import Home from "./pages/Home";
 import Problems from "./pages/Problems";
 import Problem from "./pages/Problem";
+import CraftProblem from "./pages/CraftProblem";
+import ModifyProblem from "./pages/ModifyProblem";
 
 function App() {
 	return (
@@ -14,6 +16,8 @@ function App() {
 					<Route path="/" element={<Home />} />
 					<Route path="/problems" element={<Problems />} />
 					<Route path="/problem/:problemId" element={<Problem />} />
+					<Route path="/craft-problem" element={<CraftProblem />} />
+					<Route path="/problem/modify/:problemSlug" element={<ModifyProblem />} />
 				</Routes>
 			</div>
 		</Router>
