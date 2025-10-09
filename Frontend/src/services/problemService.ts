@@ -89,6 +89,26 @@ export interface CreateProblemPayload {
 	companyTags?: string[];
 }
 
+// Simple utility to extract filename from content-disposition header
+const extractFilename = (contentDisposition: string): string | undefined => {
+	// Handle both quoted and unquoted filenames
+	const matches = [
+		/filename\*=UTF-8''([^;]+)/i, // RFC 5987 format
+		/filename="([^"]+)"/i, // Quoted format
+		/filename=([^;]+)/i, // Unquoted format
+	];
+
+	for (const regex of matches) {
+		const match = contentDisposition.match(regex);
+		if (match && match[1]) {
+			// Decode URI component if it's the RFC 5987 format
+			const filename = regex === matches[0] ? decodeURIComponent(match[1]) : match[1].trim();
+			return filename;
+		}
+	}
+	return undefined;
+};
+
 class ProblemService {
 	async getProblems(): Promise<ApiProblem[]> {
 		try {
@@ -164,12 +184,24 @@ class ProblemService {
 		}
 	}
 
-	async downloadTestcase(slug: string): Promise<Blob> {
+	async downloadTestcase(slug: string): Promise<{ blob: Blob; filename?: string }> {
 		try {
 			const response = await apiClient.get(`/testcases/download/${slug}`, {
 				responseType: "blob",
 			});
-			return response.data;
+
+			// Extract filename from content-disposition header elegantly
+			const contentDispositionHeader = response.headers["content-disposition"];
+			let filename: string | undefined;
+
+			if (contentDispositionHeader) {
+				filename = extractFilename(contentDispositionHeader);
+			}
+
+			return {
+				blob: response.data,
+				filename: filename || `${slug}-testcases.json`, // fallback filename
+			};
 		} catch (error) {
 			console.error("Error downloading testcase:", error);
 			if (axios.isAxiosError(error)) {

@@ -14,6 +14,7 @@ export default function ModifyProblem() {
 	const [downloadingTestcase, setDownloadingTestcase] = useState(false);
 	const [publishing, setPublishing] = useState(false);
 	const [successMessage, setSuccessMessage] = useState<string | null>(null);
+	const [downloadMessage, setDownloadMessage] = useState<string | null>(null);
 
 	useEffect(() => {
 		const fetchProblem = async () => {
@@ -81,22 +82,26 @@ export default function ModifyProblem() {
 		try {
 			setDownloadingTestcase(true);
 			setError(null);
-			const blob = await problemService.downloadTestcase(problemSlug);
+			setDownloadMessage("Starting download...");
+
+			const { blob, filename } = await problemService.downloadTestcase(problemSlug);
 
 			// Create download link
 			const url = window.URL.createObjectURL(blob);
 			const link = document.createElement("a");
 			link.href = url;
-			link.download = `${problemSlug}-testcases.json`;
+			link.download = filename || `${problemSlug}-testcases.json`;
 			document.body.appendChild(link);
 			link.click();
 			document.body.removeChild(link);
 			window.URL.revokeObjectURL(url);
 
 			setSuccessMessage("Testcase downloaded successfully!");
+			setDownloadMessage(null);
 		} catch (err) {
 			const error = err as { message?: string };
 			setError(error.message || "Failed to download testcase");
+			setDownloadMessage(null);
 		} finally {
 			setDownloadingTestcase(false);
 		}
@@ -129,6 +134,16 @@ export default function ModifyProblem() {
 			return () => clearTimeout(timer);
 		}
 	}, [successMessage, error]);
+
+	// Clear download message after 3 seconds
+	useEffect(() => {
+		if (downloadMessage) {
+			const timer = setTimeout(() => {
+				setDownloadMessage(null);
+			}, 3000);
+			return () => clearTimeout(timer);
+		}
+	}, [downloadMessage]);
 
 	if (loading) {
 		return (
@@ -212,6 +227,13 @@ export default function ModifyProblem() {
 				</div>
 
 				{/* Messages */}
+				{downloadMessage && (
+					<div className="mb-6 p-4 bg-blue-50 border border-blue-200 text-blue-700 rounded-lg flex items-center gap-2">
+						<div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+						{downloadMessage}
+					</div>
+				)}
+
 				{successMessage && (
 					<div className="mb-6 p-4 bg-green-50 border border-green-200 text-green-700 rounded-lg flex items-center gap-2">
 						<CheckCircle className="h-5 w-5" />
