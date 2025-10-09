@@ -16,6 +16,7 @@ export interface Problem {
 		cpp: string;
 		python: string;
 	};
+	isPublished: boolean;
 }
 
 // Adapter: Transform API problem to local Problem interface
@@ -43,5 +44,6 @@ export const transformApiProblem = (apiProblem: ApiProblem): Problem => {
 			cpp: "// Your code here",
 			python: "# Your code here",
 		},
+		isPublished: apiProblem.isPublished,
 	};
 };

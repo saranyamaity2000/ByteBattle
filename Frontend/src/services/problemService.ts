@@ -122,6 +122,63 @@ class ProblemService {
 			throw error;
 		}
 	}
+
+	async publishProblem(slug: string): Promise<ApiProblem> {
+		try {
+			const response = await apiClient.patch<ApiResponse<ApiProblem>>(
+				`/problems/${slug}/publish`
+			);
+			return response.data.data;
+		} catch (error) {
+			console.error("Error publishing problem:", error);
+			if (axios.isAxiosError(error)) {
+				const message = error.response?.data?.message || "Failed to publish problem";
+				throw new Error(message);
+			}
+			throw error;
+		}
+	}
+
+	async uploadTestcase(slug: string, file: File): Promise<{ message: string }> {
+		try {
+			const formData = new FormData();
+			formData.append("testcase", file);
+
+			const response = await apiClient.post<{ message: string }>(
+				`/testcases/upload/${slug}`,
+				formData,
+				{
+					headers: {
+						"Content-Type": "multipart/form-data",
+					},
+				}
+			);
+			return response.data;
+		} catch (error) {
+			console.error("Error uploading testcase:", error);
+			if (axios.isAxiosError(error)) {
+				const message = error.response?.data?.message || "Failed to upload testcase";
+				throw new Error(message);
+			}
+			throw error;
+		}
+	}
+
+	async downloadTestcase(slug: string): Promise<Blob> {
+		try {
+			const response = await apiClient.get(`/testcases/download/${slug}`, {
+				responseType: "blob",
+			});
+			return response.data;
+		} catch (error) {
+			console.error("Error downloading testcase:", error);
+			if (axios.isAxiosError(error)) {
+				const message = error.response?.data?.message || "Failed to download testcase";
+				throw new Error(message);
+			}
+			throw error;
+		}
+	}
 }
 
 export const problemService = new ProblemService();
