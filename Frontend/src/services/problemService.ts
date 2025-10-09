@@ -176,10 +176,6 @@ class ProblemService {
 			return response.data;
 		} catch (error) {
 			console.error("Error uploading testcase:", error);
-			if (axios.isAxiosError(error)) {
-				const message = error.response?.data?.message || "Failed to upload testcase";
-				throw new Error(message);
-			}
 			throw error;
 		}
 	}

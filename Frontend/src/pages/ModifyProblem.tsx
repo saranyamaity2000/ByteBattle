@@ -1,9 +1,101 @@
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
+import axios from "axios";
 import { problemService } from "@/services/problemService";
 import type { ApiProblem } from "@/services/problemService";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Upload, Download, Eye, FileText, AlertCircle, CheckCircle } from "lucide-react";
+import {
+	ArrowLeft,
+	Upload,
+	Download,
+	Eye,
+	FileText,
+	AlertCircle,
+	CheckCircle,
+	FileDown,
+} from "lucide-react";
+
+// Template utility for generating testcase template
+const generateTestcaseTemplate = () => {
+	return [
+		{
+			input: "test input",
+			output: "test output",
+		},
+		{
+			input: "test input2",
+			output: "test output2",
+		},
+		{
+			input: "keep adding more",
+			output: "keep adding more",
+		},
+	];
+};
+
+// Utility to download template file
+const downloadTemplate = () => {
+	const template = generateTestcaseTemplate();
+	const jsonString = JSON.stringify(template, null, 2);
+	const blob = new Blob([jsonString], { type: "application/json" });
+
+	const url = window.URL.createObjectURL(blob);
+	const link = document.createElement("a");
+	link.href = url;
+	link.download = "testcase-template.json";
+	document.body.appendChild(link);
+	link.click();
+	document.body.removeChild(link);
+	window.URL.revokeObjectURL(url);
+};
+
+// Reusable error message component with template link
+const ErrorMessage = ({
+	error,
+	isValidationError,
+}: {
+	error: string;
+	isValidationError: boolean;
+}) => {
+	if (!isValidationError) {
+		return (
+			<div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg flex items-center gap-2">
+				<AlertCircle className="h-5 w-5" />
+				{error}
+			</div>
+		);
+	}
+
+	return (
+		<div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg flex items-center gap-2">
+			<AlertCircle className="h-5 w-5" />
+			<span>
+				Please verify the uploaded file against the{" "}
+				<button
+					onClick={downloadTemplate}
+					className="underline text-red-800 font-medium hover:text-red-600 cursor-pointer"
+					style={{ cursor: "pointer" }}
+				>
+					template file
+				</button>
+			</span>
+		</div>
+	);
+};
+
+// Template download button component
+const TemplateDownloadButton = () => (
+	<Button
+		onClick={downloadTemplate}
+		variant="outline"
+		size="sm"
+		className="mb-4 cursor-pointer"
+		style={{ cursor: "pointer !important" }}
+	>
+		<FileDown className="h-4 w-4 mr-2" />
+		Download Template
+	</Button>
+);
 
 export default function ModifyProblem() {
 	const { problemSlug } = useParams<{ problemSlug: string }>();
@@ -15,6 +107,7 @@ export default function ModifyProblem() {
 	const [publishing, setPublishing] = useState(false);
 	const [successMessage, setSuccessMessage] = useState<string | null>(null);
 	const [downloadMessage, setDownloadMessage] = useState<string | null>(null);
+	const [isValidationError, setIsValidationError] = useState(false);
 
 	useEffect(() => {
 		const fetchProblem = async () => {
@@ -43,6 +136,10 @@ export default function ModifyProblem() {
 		const file = event.target.files?.[0];
 		if (!file || !problemSlug) return;
 
+		// Clear any existing error and validation state as soon as user tries to upload
+		setError(null);
+		setIsValidationError(false);
+
 		// Validate file type
 		if (!file.name.endsWith(".json")) {
 			setError("Please upload a JSON file");
@@ -57,7 +154,6 @@ export default function ModifyProblem() {
 
 		try {
 			setUploadingTestcase(true);
-			setError(null);
 			await problemService.uploadTestcase(problemSlug, file);
 			setSuccessMessage("Testcase uploaded successfully!");
 
@@ -67,8 +163,24 @@ export default function ModifyProblem() {
 				setProblem(updatedProblem);
 			}
 		} catch (err) {
-			const error = err as { message?: string };
-			setError(error.message || "Failed to upload testcase");
+			// Check if it's a 400 validation error using axios error structure
+			let isValidationErr = false;
+			let errorMessage = "Failed to upload testcase";
+
+			if (axios.isAxiosError(err)) {
+				if (err.response?.status === 400) {
+					isValidationErr = true;
+					// Override the error message for validation errors to be cleaner
+					errorMessage = "Invalid testcase format detected.";
+				} else {
+					errorMessage = err.response?.data?.message || err.message || errorMessage;
+				}
+			} else if (err instanceof Error) {
+				errorMessage = err.message;
+			}
+
+			setIsValidationError(isValidationErr);
+			setError(errorMessage);
 		} finally {
 			setUploadingTestcase(false);
 			// Clear file input
@@ -124,16 +236,15 @@ export default function ModifyProblem() {
 		}
 	};
 
-	// Clear messages after 5 seconds
+	// Clear success messages after 5 seconds, but keep error messages persistent
 	useEffect(() => {
-		if (successMessage || error) {
+		if (successMessage) {
 			const timer = setTimeout(() => {
 				setSuccessMessage(null);
-				setError(null);
 			}, 5000);
 			return () => clearTimeout(timer);
 		}
-	}, [successMessage, error]);
+	}, [successMessage]);
 
 	// Clear download message after 3 seconds
 	useEffect(() => {
@@ -196,7 +307,7 @@ export default function ModifyProblem() {
 				{/* Header */}
 				<div className="flex items-center mb-8">
 					<Link to="/problems">
-						<Button variant="ghost" className="mr-4">
+						<Button variant="ghost" className="mr-4 cursor-pointer">
 							<ArrowLeft className="h-4 w-4 mr-2" />
 							Back to Problems
 						</Button>
@@ -241,12 +352,7 @@ export default function ModifyProblem() {
 					</div>
 				)}
 
-				{error && (
-					<div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg flex items-center gap-2">
-						<AlertCircle className="h-5 w-5" />
-						{error}
-					</div>
-				)}
+				{error && <ErrorMessage error={error} isValidationError={isValidationError} />}
 
 				{/* Testcase Management Section */}
 				<div className="bg-white rounded-lg shadow-md p-6 mb-6">
@@ -256,6 +362,11 @@ export default function ModifyProblem() {
 					</h2>
 
 					<div className="space-y-4">
+						{/* Template download button */}
+						<div className="flex justify-end">
+							<TemplateDownloadButton />
+						</div>
+
 						{/* Current testcase status */}
 						{problem.testcaseUrl ? (
 							<div className="p-4 bg-green-50 border border-green-200 rounded-lg">
@@ -268,7 +379,7 @@ export default function ModifyProblem() {
 									disabled={downloadingTestcase}
 									variant="outline"
 									size="sm"
-									className="mr-3"
+									className="mr-3 cursor-pointer"
 								>
 									<Download className="h-4 w-4 mr-2" />
 									{downloadingTestcase ? "Downloading..." : "Download Testcase"}
@@ -316,7 +427,7 @@ export default function ModifyProblem() {
 					<Button
 						onClick={handlePublishProblem}
 						disabled={publishing || problem.isPublished || !problem.testcaseUrl}
-						className="px-6 py-2"
+						className="px-6 py-2 cursor-pointer"
 					>
 						{publishing
 							? "Publishing..."
