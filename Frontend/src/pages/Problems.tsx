@@ -10,7 +10,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "../components/ui/select";
-import { ArrowLeft, Filter, AlertCircle, RefreshCw } from "lucide-react";
+import { ArrowLeft, Filter, AlertCircle, RefreshCw, Settings, EyeOff } from "lucide-react";
 
 export default function Problems() {
 	const { problems, isLoading, error, refetch } = useProblems();
@@ -151,38 +151,77 @@ export default function Problems() {
 				{/* Problems List */}
 				<div className="space-y-4">
 					{filteredProblems.map((problem, index) => (
-						<Link key={problem.id} to={`/problem/${problem.id}`} className="block">
-							<div className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-6 border border-gray-200 hover:border-blue-300">
-								<div className="flex items-center justify-between">
-									<div className="flex items-center gap-4">
-										<div className="text-2xl font-bold text-gray-400 min-w-[3rem]">
-											#{index + 1}
-										</div>
-										<div className="flex-1">
-											<h3 className="text-xl font-semibold text-gray-900 mb-2 hover:text-blue-600 transition-colors">
-												{problem.title}
-											</h3>
-											<p className="text-gray-600 text-sm line-clamp-2">
-												{problem.description.substring(0, 150)}...
-											</p>
-										</div>
+						<div
+							key={problem.id}
+							className={`rounded-lg shadow-md transition-shadow p-6 border border-gray-200 ${
+								problem.isPublished
+									? "bg-white hover:shadow-lg hover:border-blue-300"
+									: "bg-gray-50 opacity-75"
+							}`}
+						>
+							<div className="flex items-center justify-between">
+								<div className="flex items-center gap-4 flex-1">
+									<div
+										className={`text-2xl font-bold min-w-[3rem] ${
+											problem.isPublished ? "text-gray-400" : "text-gray-300"
+										}`}
+									>
+										#{index + 1}
 									</div>
-
-									<div className="flex items-center gap-3">
-										<span
-											className={`px-3 py-1 rounded-full text-xs font-medium border ${getDifficultyColor(
-												problem.difficulty
-											)}`}
-										>
-											{problem.difficulty}
-										</span>
-										<span className="px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 border border-blue-200">
-											{problem.category}
-										</span>
+									<div className="flex-1">
+										{problem.isPublished ? (
+											<Link to={`/problem/${problem.id}`} className="block">
+												<h3 className="text-xl font-semibold text-gray-900 mb-2 hover:text-blue-600 transition-colors">
+													{problem.title}
+												</h3>
+												<p className="text-gray-600 text-sm line-clamp-2">
+													{problem.description.substring(0, 150)}...
+												</p>
+											</Link>
+										) : (
+											<div className="block cursor-not-allowed">
+												<h3 className="text-xl font-semibold text-gray-500 mb-2">
+													{problem.title}
+												</h3>
+												<p className="text-gray-400 text-sm line-clamp-2">
+													{problem.description.substring(0, 150)}...
+												</p>
+											</div>
+										)}
 									</div>
 								</div>
+
+								<div className="flex items-center gap-3">
+									<Link
+										to={`/problem/modify/${problem.id}`}
+										className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+										title="Modify Problem"
+										onClick={(e) => e.stopPropagation()}
+									>
+										<Settings className="h-4 w-4 text-gray-500 hover:text-blue-600" />
+									</Link>
+									{!problem.isPublished && (
+										<div
+											className="flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800 border border-orange-200"
+											title="This problem is not published yet"
+										>
+											<EyeOff className="h-3 w-3" />
+											<span>Unpublished</span>
+										</div>
+									)}
+									<span
+										className={`px-3 py-1 rounded-full text-xs font-medium border ${getDifficultyColor(
+											problem.difficulty
+										)}`}
+									>
+										{problem.difficulty}
+									</span>
+									<span className="px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 border border-blue-200">
+										{problem.category}
+									</span>
+								</div>
 							</div>
-						</Link>
+						</div>
 					))}
 				</div>
 

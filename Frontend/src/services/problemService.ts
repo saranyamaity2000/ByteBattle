@@ -89,6 +89,26 @@ export interface CreateProblemPayload {
 	companyTags?: string[];
 }
 
+// Simple utility to extract filename from content-disposition header
+const extractFilename = (contentDisposition: string): string | undefined => {
+	// Handle both quoted and unquoted filenames
+	const patterns = [
+		{ regex: /filename\*=UTF-8''([^;]+)/i, isRFC5987: true }, // RFC 5987 format
+		{ regex: /filename="([^"]+)"/i, isRFC5987: false }, // Quoted format
+		{ regex: /filename=([^;]+)/i, isRFC5987: false }, // Unquoted format
+	];
+
+	for (const { regex, isRFC5987 } of patterns) {
+		const match = contentDisposition.match(regex);
+		if (match && match[1]) {
+			// Decode URI component if it's the RFC 5987 format
+			const filename = isRFC5987 ? decodeURIComponent(match[1]) : match[1].trim();
+			return filename;
+		}
+	}
+	return undefined;
+};
+
 class ProblemService {
 	async getProblems(): Promise<ApiProblem[]> {
 		try {
@@ -119,6 +139,71 @@ class ProblemService {
 			return response.data.data;
 		} catch (error) {
 			console.error("Error creating problem:", error);
+			throw error;
+		}
+	}
+
+	async publishProblem(slug: string): Promise<ApiProblem> {
+		try {
+			const response = await apiClient.patch<ApiResponse<ApiProblem>>(
+				`/problems/${slug}/publish`
+			);
+			return response.data.data;
+		} catch (error) {
+			console.error("Error publishing problem:", error);
+			if (axios.isAxiosError(error)) {
+				const message = error.response?.data?.message || "Failed to publish problem";
+				throw new Error(message);
+			}
+			throw error;
+		}
+	}
+
+	async uploadTestcase(slug: string, file: File): Promise<{ message: string }> {
+		try {
+			const formData = new FormData();
+			formData.append("file", file); // Changed from "testcase" to "file"
+
+			const response = await apiClient.post<{ message: string }>(
+				`/testcases/upload/${slug}`,
+				formData,
+				{
+					headers: {
+						"Content-Type": "multipart/form-data",
+					},
+				}
+			);
+			return response.data;
+		} catch (error) {
+			console.error("Error uploading testcase:", error);
+			throw error;
+		}
+	}
+
+	async downloadTestcase(slug: string): Promise<{ blob: Blob; filename?: string }> {
+		try {
+			const response = await apiClient.get(`/testcases/download/${slug}`, {
+				responseType: "blob",
+			});
+
+			// Extract filename from content-disposition header elegantly
+			const contentDispositionHeader = response.headers["content-disposition"];
+			let filename: string | undefined;
+
+			if (contentDispositionHeader) {
+				filename = extractFilename(contentDispositionHeader);
+			}
+
+			return {
+				blob: response.data,
+				filename: filename || `${slug}-testcases.json`, // fallback filename
+			};
+		} catch (error) {
+			console.error("Error downloading testcase:", error);
+			if (axios.isAxiosError(error)) {
+				const message = error.response?.data?.message || "Failed to download testcase";
+				throw new Error(message);
+			}
 			throw error;
 		}
 	}
