@@ -153,22 +153,41 @@ export default function Problems() {
 					{filteredProblems.map((problem, index) => (
 						<div
 							key={problem.id}
-							className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-6 border border-gray-200 hover:border-blue-300"
+							className={`rounded-lg shadow-md transition-shadow p-6 border border-gray-200 ${
+								problem.isPublished
+									? "bg-white hover:shadow-lg hover:border-blue-300"
+									: "bg-gray-50 opacity-75"
+							}`}
 						>
 							<div className="flex items-center justify-between">
 								<div className="flex items-center gap-4 flex-1">
-									<div className="text-2xl font-bold text-gray-400 min-w-[3rem]">
+									<div
+										className={`text-2xl font-bold min-w-[3rem] ${
+											problem.isPublished ? "text-gray-400" : "text-gray-300"
+										}`}
+									>
 										#{index + 1}
 									</div>
 									<div className="flex-1">
-										<Link to={`/problem/${problem.id}`} className="block">
-											<h3 className="text-xl font-semibold text-gray-900 mb-2 hover:text-blue-600 transition-colors">
-												{problem.title}
-											</h3>
-											<p className="text-gray-600 text-sm line-clamp-2">
-												{problem.description.substring(0, 150)}...
-											</p>
-										</Link>
+										{problem.isPublished ? (
+											<Link to={`/problem/${problem.id}`} className="block">
+												<h3 className="text-xl font-semibold text-gray-900 mb-2 hover:text-blue-600 transition-colors">
+													{problem.title}
+												</h3>
+												<p className="text-gray-600 text-sm line-clamp-2">
+													{problem.description.substring(0, 150)}...
+												</p>
+											</Link>
+										) : (
+											<div className="block cursor-not-allowed">
+												<h3 className="text-xl font-semibold text-gray-500 mb-2">
+													{problem.title}
+												</h3>
+												<p className="text-gray-400 text-sm line-clamp-2">
+													{problem.description.substring(0, 150)}...
+												</p>
+											</div>
+										)}
 									</div>
 								</div>
 

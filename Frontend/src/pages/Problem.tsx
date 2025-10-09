@@ -124,6 +124,34 @@ export default function Problem() {
 		);
 	}
 
+	// Check if problem is not published
+	if (!problem.isPublished) {
+		return (
+			<div className="min-h-screen bg-gradient-to-br from-slate-50 to-gray-100 flex items-center justify-center">
+				<div className="text-center max-w-md">
+					<div className="mb-6">
+						<div className="mx-auto w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mb-4">
+							<AlertCircle className="h-8 w-8 text-orange-600" />
+						</div>
+						<h2 className="text-2xl font-bold text-gray-900 mb-2">
+							Problem Yet to be Published
+						</h2>
+						<p className="text-gray-600 text-sm leading-relaxed">
+							This problem is currently under review and hasn't been published yet.
+							Please check back later or contact the administrator.
+						</p>
+					</div>
+					<Link to="/problems" className="inline-block">
+						<Button variant="outline" className="flex items-center gap-2 mx-auto">
+							<ArrowLeft className="h-4 w-4" />
+							Back to Problems
+						</Button>
+					</Link>
+				</div>
+			</div>
+		);
+	}
+
 	const getDifficultyColor = () => {
 		switch (problem.difficulty) {
 			case "Easy":
