@@ -162,7 +162,7 @@ class ProblemService {
 	async uploadTestcase(slug: string, file: File): Promise<{ message: string }> {
 		try {
 			const formData = new FormData();
-			formData.append("testcase", file);
+			formData.append("file", file); // Changed from "testcase" to "file"
 
 			const response = await apiClient.post<{ message: string }>(
 				`/testcases/upload/${slug}`,
