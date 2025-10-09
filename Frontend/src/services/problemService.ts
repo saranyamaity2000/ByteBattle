@@ -92,17 +92,17 @@ export interface CreateProblemPayload {
 // Simple utility to extract filename from content-disposition header
 const extractFilename = (contentDisposition: string): string | undefined => {
 	// Handle both quoted and unquoted filenames
-	const matches = [
-		/filename\*=UTF-8''([^;]+)/i, // RFC 5987 format
-		/filename="([^"]+)"/i, // Quoted format
-		/filename=([^;]+)/i, // Unquoted format
+	const patterns = [
+		{ regex: /filename\*=UTF-8''([^;]+)/i, isRFC5987: true }, // RFC 5987 format
+		{ regex: /filename="([^"]+)"/i, isRFC5987: false }, // Quoted format
+		{ regex: /filename=([^;]+)/i, isRFC5987: false }, // Unquoted format
 	];
 
-	for (const regex of matches) {
+	for (const { regex, isRFC5987 } of patterns) {
 		const match = contentDisposition.match(regex);
 		if (match && match[1]) {
 			// Decode URI component if it's the RFC 5987 format
-			const filename = regex === matches[0] ? decodeURIComponent(match[1]) : match[1].trim();
+			const filename = isRFC5987 ? decodeURIComponent(match[1]) : match[1].trim();
 			return filename;
 		}
 	}
