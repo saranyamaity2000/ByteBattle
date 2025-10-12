@@ -9,7 +9,7 @@ export default function PageLoader({ isLoading }: PageLoaderProps) {
 
 	return (
 		<div className="fixed inset-0 z-50 flex items-center justify-center bg-white/80 backdrop-blur-sm">
-			<Spinner className="size-8 text-blue-600" />
+			<Spinner className="size-20 text-blue-600" />
 		</div>
 	);
 }
