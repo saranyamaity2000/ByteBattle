@@ -1,5 +1,6 @@
 import "./App.css";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { AuthProvider } from "./contexts/AuthContext";
 import Navbar from "./components/Navbar";
 import Home from "./pages/Home";
 import Problems from "./pages/Problems";
@@ -9,18 +10,20 @@ import ModifyProblem from "./pages/ModifyProblem";
 
 function App() {
 	return (
-		<Router>
-			<div className="min-h-screen">
-				<Navbar />
-				<Routes>
-					<Route path="/" element={<Home />} />
-					<Route path="/problems" element={<Problems />} />
-					<Route path="/problem/:problemId" element={<Problem />} />
-					<Route path="/craft-problem" element={<CraftProblem />} />
-					<Route path="/problem/modify/:problemSlug" element={<ModifyProblem />} />
-				</Routes>
-			</div>
-		</Router>
+		<AuthProvider>
+			<Router>
+				<div className="min-h-screen">
+					<Navbar />
+					<Routes>
+						<Route path="/" element={<Home />} />
+						<Route path="/problems" element={<Problems />} />
+						<Route path="/problem/:problemId" element={<Problem />} />
+						<Route path="/craft-problem" element={<CraftProblem />} />
+						<Route path="/problem/modify/:problemSlug" element={<ModifyProblem />} />
+					</Routes>
+				</div>
+			</Router>
+		</AuthProvider>
 	);
 }
 

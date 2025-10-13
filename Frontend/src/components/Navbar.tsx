@@ -1,8 +1,11 @@
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "./ui/button";
+import { useAuth } from "../hooks/useAuth";
+import { LogOut, User } from "lucide-react";
 
 export default function Navbar() {
 	const location = useLocation();
+	const { user, loading, signInWithGoogle, signOut } = useAuth();
 
 	return (
 		<nav className="w-full border-b border-gray-200 bg-white/80 backdrop-blur-md">
@@ -52,8 +55,29 @@ export default function Navbar() {
 
 					{/* Right side buttons */}
 					<div className="flex items-center space-x-4">
-						<Button variant="outline">Sign In</Button>
-						<Button>Get Started</Button>
+						{loading ? (
+							<Button variant="outline" disabled>
+								Loading...
+							</Button>
+						) : user ? (
+							<>
+								<div className="flex items-center space-x-2 text-sm text-gray-700">
+									<User size={16} />
+									<span>{user.user_metadata?.name || user.email}</span>
+								</div>
+								<Button variant="outline" onClick={signOut}>
+									<LogOut size={16} className="mr-2" />
+									Sign Out
+								</Button>
+							</>
+						) : (
+							<>
+								<Button variant="outline" onClick={signInWithGoogle}>
+									Sign In with Google
+								</Button>
+								<Button onClick={signInWithGoogle}>Get Started</Button>
+							</>
+						)}
 					</div>
 				</div>
 			</div>
