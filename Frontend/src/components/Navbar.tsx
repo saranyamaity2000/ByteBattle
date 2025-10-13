@@ -1,11 +1,11 @@
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "./ui/button";
-import { useAuth } from "../hooks/useAuth";
+import { useAuthContext } from "../hooks/context-hooks/useAuth";
 import { LogOut, User } from "lucide-react";
 
 export default function Navbar() {
 	const location = useLocation();
-	const { user, loading, signInWithGoogle, signOut } = useAuth();
+	const { user, loading, signInWithGoogle, signOut } = useAuthContext();
 
 	return (
 		<nav className="w-full border-b border-gray-200 bg-white/80 backdrop-blur-md">
