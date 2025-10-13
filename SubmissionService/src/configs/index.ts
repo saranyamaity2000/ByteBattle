@@ -9,6 +9,8 @@ export interface EnvConfig {
 	LOG_LEVEL: string;
 	RABBITMQ_URL: string;
 	RABBITMQ_UI_URL: string;
+	SUPABASE_URL: string;
+	SUPABASE_SERVICE_ROLE_KEY: string;
 }
 
 export const envConfig: EnvConfig = {
@@ -17,6 +19,8 @@ export const envConfig: EnvConfig = {
 	LOG_LEVEL: process.env.LOG_LEVEL || "info",
 	RABBITMQ_URL: process.env.RABBITMQ_URL || "amqp://localhost:5672",
 	RABBITMQ_UI_URL: process.env.RABBITMQ_UI_URL || "http://localhost:15672",
+	SUPABASE_URL: process.env.SUPABASE_URL || "",
+	SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY || "",
 };
 
 export const constantConfig = {
