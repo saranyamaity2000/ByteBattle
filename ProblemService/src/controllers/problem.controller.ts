@@ -30,7 +30,12 @@ class ProblemController {
 		res: Response,
 		next: NextFunction
 	): Promise<void> => {
-		const newProblem = await this.problemService.createProblem(req.body);
+		// Use authenticated user's ID as author
+		const problemData = {
+			...req.body,
+			author: req.user?.id || req.body.author, // Use authenticated user ID or fallback
+		};
+		const newProblem = await this.problemService.createProblem(problemData);
 		res.status(201).json({ data: newProblem });
 	};
 

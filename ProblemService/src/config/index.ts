@@ -11,6 +11,10 @@ type ServerConfig = {
 		REGION: string;
 		BUCKET_NAME: string;
 	};
+	SUPABASE: {
+		URL: string;
+		SERVICE_ROLE_KEY: string;
+	};
 };
 
 function loadEnv() {
@@ -28,6 +32,10 @@ export const serverConfig: ServerConfig = {
 		ACCESS_KEY_SECRET: process.env.AWS_ACCESS_KEY_SECRET || "N/A",
 		REGION: process.env.AWS_REGION || "N/A",
 		BUCKET_NAME: process.env.AWS_BUCKET_NAME || "N/A",
+	},
+	SUPABASE: {
+		URL: process.env.SUPABASE_URL || "N/A",
+		SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY || "N/A",
 	},
 	ALLOWED_ORIGINS: process.env.ALLOWED_ORIGINS
 		? process.env.ALLOWED_ORIGINS.split(",")
