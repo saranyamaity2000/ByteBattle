@@ -1,5 +1,6 @@
 import request from "supertest";
 import app from "../app";
+import { mockUser } from "./utils/auth.mock";
 
 describe("Problem Controller Integration Tests", () => {
 	const mockProblemData = {
@@ -42,6 +43,15 @@ describe("Problem Controller Integration Tests", () => {
 			expect(response.body.data.testcaseUrl).toBe(mockProblemData.testcaseUrl);
 			expect(response.body.data.createdAt).toBeDefined();
 			expect(response.body.data.updatedAt).toBeDefined();
+		});
+
+		it("should use authenticated user ID as author", async () => {
+			const response = await request(app)
+				.post("/api/v1/problems")
+				.send(mockProblemData)
+				.expect(201);
+
+			expect(response.body.data.author).toBe(mockUser.id);
 		});
 
 		it("should create a problem with minimal required fields", async () => {

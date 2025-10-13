@@ -3,6 +3,24 @@ import { MongoMemoryServer } from "mongodb-memory-server";
 
 let mongoServer: MongoMemoryServer;
 
+// Mock Supabase auth for tests
+jest.mock("../middlewares/auth.middleware", () => {
+	const originalModule = jest.requireActual("../middlewares/auth.middleware");
+	const { mockVerifySupabaseToken, mockOptionalSupabaseAuth } =
+		jest.requireActual("./utils/auth.mock");
+
+	return {
+		...originalModule,
+		verifySupabaseToken: mockVerifySupabaseToken,
+		optionalSupabaseAuth: mockOptionalSupabaseAuth,
+		initializeSupabase: jest.fn(() => ({
+			auth: {
+				getUser: jest.fn(),
+			},
+		})),
+	};
+});
+
 beforeAll(async () => {
 	// Start MongoDB Memory Server
 	mongoServer = await MongoMemoryServer.create();

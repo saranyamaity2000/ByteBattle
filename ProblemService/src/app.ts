@@ -5,13 +5,17 @@ import v2Router from "./routers/v2/index.router";
 import { appErrorHandler, genericErrorHandler } from "./middlewares/error.middleware";
 import { attachCorrelationIdMiddleware } from "./middlewares/correlation.middleware";
 import { serverConfig } from "./config";
+import { initializeSupabase } from "./middlewares/auth.middleware";
+
+// Initialize Supabase for authentication
+initializeSupabase(serverConfig.SUPABASE.URL, serverConfig.SUPABASE.SERVICE_ROLE_KEY);
 
 const app = express();
 app.use(
 	cors({
 		origin: serverConfig.ALLOWED_ORIGINS,
 		credentials: true, // Allow credentials
-		exposedHeaders: ['Content-Disposition'] // Add this line!
+		exposedHeaders: ["Content-Disposition"], // Add this line!
 	})
 );
 
