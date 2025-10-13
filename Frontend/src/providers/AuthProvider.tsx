@@ -30,7 +30,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 	}, []);
 
 	const signInWithGoogle = async () => {
-        setLoading(true);
+		setLoading(true);
 		const { error } = await supabase.auth.signInWithOAuth({
 			provider: "google",
 			options: {
