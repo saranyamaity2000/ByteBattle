@@ -19,7 +19,12 @@ export async function buildServer() {
 	});
 
 	// Initialize Supabase for authentication
-	initializeSupabase(envConfig.SUPABASE_URL, envConfig.SUPABASE_SERVICE_ROLE_KEY);
+	try {
+		initializeSupabase(envConfig.SUPABASE_URL, envConfig.SUPABASE_SERVICE_ROLE_KEY);
+	} catch (err) {
+		console.error("Failed to initialize Supabase authentication:", err);
+		throw new Error("Server startup aborted due to Supabase authentication setup failure.");
+	}
 
 	// database connection
 	await connectDB(app);
