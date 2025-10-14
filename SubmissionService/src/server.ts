@@ -2,6 +2,8 @@ import fastify, { FastifyError } from "fastify";
 import { v1Routes } from "./router/v1";
 import { fastifyServerOptions } from "./configs/server.config";
 import { connectDB } from "./configs/db.config";
+import { envConfig } from "./configs";
+import { initializeSupabase } from "./utils/auth.middleware";
 
 export async function buildServer() {
 	const app = fastify({
@@ -15,6 +17,14 @@ export async function buildServer() {
 			},
 		},
 	});
+
+	// Initialize Supabase for authentication
+	try {
+		initializeSupabase(envConfig.SUPABASE_URL, envConfig.SUPABASE_SERVICE_ROLE_KEY);
+	} catch (err) {
+		console.error("Failed to initialize Supabase authentication:", err);
+		throw new Error("Server startup aborted due to Supabase authentication setup failure.");
+	}
 
 	// database connection
 	await connectDB(app);

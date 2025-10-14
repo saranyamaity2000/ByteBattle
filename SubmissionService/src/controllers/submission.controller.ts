@@ -1,7 +1,10 @@
 import { FastifyRequest, FastifyReply } from "fastify";
 import { SubmissionService } from "../services/submission.service";
 import { NotFoundError } from "../utils/errors";
-import { CreateSubmissionRequestDTO, UpdateSubmissionStatusRequestDTO } from "../dtos/submission.dto";
+import {
+	CreateSubmissionRequestDTO,
+	UpdateSubmissionStatusRequestDTO,
+} from "../dtos/submission.dto";
 
 interface GetSubmissionParams {
 	id: string;
@@ -18,7 +21,20 @@ export class SubmissionController {
 		request: FastifyRequest<{ Body: CreateSubmissionRequestDTO }>,
 		reply: FastifyReply
 	) => {
-		const submission = await this.submissionService.createSubmission(request.body);
+		// Add authenticated user ID to submission
+		const userId = request.user?.id;
+		if (!userId) {
+			return reply.code(401).send({
+				error: "Unauthorized",
+				message: "User ID not found in token",
+			});
+		}
+
+		const submissionData = {
+			...request.body,
+			userId, // Use authenticated user ID
+		};
+		const submission = await this.submissionService.createSubmission(submissionData);
 		return reply.code(201).send(submission);
 	};
 
