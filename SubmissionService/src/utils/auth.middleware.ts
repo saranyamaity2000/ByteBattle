@@ -26,7 +26,6 @@ export function initializeSupabase(url: string, serviceRoleKey: string): Supabas
 		},
 	});
 
-	console.log("✅ Supabase client initialized for authentication");
 	return supabaseClient;
 }
 
