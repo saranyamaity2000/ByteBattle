@@ -8,7 +8,7 @@ import { serverConfig } from "./config";
 import { initializeSupabase } from "./middlewares/auth.middleware";
 
 // Initialize Supabase for authentication
-initializeSupabase(serverConfig.SUPABASE.URL, serverConfig.SUPABASE.SERVICE_ROLE_KEY);
+initializeSupabase(serverConfig.SUPABASE.URL, serverConfig.SUPABASE.API_KEY);
 
 const app = express();
 app.use(

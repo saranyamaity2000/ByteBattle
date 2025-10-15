@@ -20,7 +20,7 @@ export async function buildServer() {
 
 	// Initialize Supabase for authentication
 	try {
-		initializeSupabase(envConfig.SUPABASE_URL, envConfig.SUPABASE_SERVICE_ROLE_KEY);
+		initializeSupabase(envConfig.SUPABASE_URL, envConfig.SUPABASE_API_KEY);
 	} catch (err) {
 		console.error("Failed to initialize Supabase authentication:", err);
 		throw new Error("Server startup aborted due to Supabase authentication setup failure.");
@@ -41,7 +41,6 @@ export async function buildServer() {
 		// Handle custom FastifyErrors with statusCode
 		if (error.statusCode) {
 			return reply.code(error.statusCode).send({
-				error: error.name || "Error",
 				message: error.message,
 				code: error.code,
 			});
@@ -49,8 +48,8 @@ export async function buildServer() {
 
 		// Default server error
 		return reply.code(500).send({
-			error: "Internal Server Error",
-			message: "Something went WRONG",
+			code: "INTERNAL_SERVER_ERROR",
+			message: "Internal Server Error | Something went WRONG",
 		});
 	});
 

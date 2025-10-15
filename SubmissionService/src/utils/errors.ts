@@ -7,3 +7,8 @@ export const InternalServerError = createError(
 	500
 );
 export const BadRequestError = createError<[string]>("BAD_REQUEST", "Bad Request", 400);
+export const ExternalServiceError = createError<[string]>(
+	"EXTERNAL_SERVICE_ERROR",
+	"External Service Error |",
+	502
+);

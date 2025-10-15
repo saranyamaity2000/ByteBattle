@@ -6,6 +6,8 @@ import { SubmissionService } from "../../services/submission.service";
 import { SubmissionRepository } from "../../repositories/submission.repository";
 import SubmissionPublisherService from "../../services/submission.publisher.service";
 import { connectToRabbitMQ } from "../../configs/rabitmq.config";
+import { ProblemClient } from "../../clients/problem.client";
+import { envConfig } from "../../configs";
 
 export async function v1Routes(fastify: FastifyInstance) {
 	fastify.get("/api/v1/health", async (_request, reply) => {
@@ -25,7 +27,8 @@ export async function v1Routes(fastify: FastifyInstance) {
 				new SubmissionPublisherService(
 					fastify.log,
 					new MessagingQueueService(await connectToRabbitMQ(fastify))
-				)
+				),
+				new ProblemClient(fastify.log, envConfig.PROBLEM_SERVICE_URL)
 			)
 		),
 	});
