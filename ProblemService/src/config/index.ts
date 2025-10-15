@@ -13,7 +13,7 @@ type ServerConfig = {
 	};
 	SUPABASE: {
 		URL: string;
-		SERVICE_ROLE_KEY: string;
+		API_KEY: string;
 	};
 };
 
@@ -35,7 +35,7 @@ export const serverConfig: ServerConfig = {
 	},
 	SUPABASE: {
 		URL: process.env.SUPABASE_URL || "N/A",
-		SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY || "N/A",
+		API_KEY: process.env.SUPABASE_API_KEY || "N/A",
 	},
 	ALLOWED_ORIGINS: process.env.ALLOWED_ORIGINS
 		? process.env.ALLOWED_ORIGINS.split(",")
