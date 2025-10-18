@@ -9,13 +9,17 @@ type EditorInstance = Parameters<OnMount>[0];
 
 interface LightCodeEditorProps {
 	initialCode?: Record<string, string>;
-	onSubmit: (code: string, language: string, testCases: TestCase[]) => void;
+	onRunCode: (code: string, language: string, testCases: TestCase[]) => void;
+	onSubmit: (code: string, language: string) => void;
+	isRunning: boolean;
 	isSubmitting: boolean;
 }
 
 export default function LightCodeEditor({
 	initialCode = {},
+	onRunCode,
 	onSubmit,
+	isRunning,
 	isSubmitting,
 }: LightCodeEditorProps) {
 	const [language, setLanguage] = useState<string>("cpp");
@@ -87,9 +91,13 @@ export default function LightCodeEditor({
 		}
 	}, []);
 
+	const handleRunCode = useCallback(() => {
+		onRunCode(codeByLanguage[language], language, testCases);
+	}, [codeByLanguage, language, testCases, onRunCode]);
+
 	const handleSubmit = useCallback(() => {
-		onSubmit(codeByLanguage[language], language, testCases);
-	}, [codeByLanguage, language, testCases, onSubmit]);
+		onSubmit(codeByLanguage[language], language);
+	}, [codeByLanguage, language, onSubmit]);
 
 	const handleTestCasesChange = useCallback((newTestCases: TestCase[]) => {
 		setTestCases(newTestCases);
@@ -116,9 +124,25 @@ export default function LightCodeEditor({
 					</Select>
 				</div>
 
-				<Button onClick={handleSubmit} disabled={isSubmitting} className="px-6">
-					{isSubmitting ? "Running..." : "Run Code"}
-				</Button>
+				<div className="flex items-center gap-3">
+					<Button
+						onClick={handleRunCode}
+						disabled={isRunning || isSubmitting}
+						variant="outline"
+						className="px-4"
+						title="Run code with custom test cases (Coming Soon)"
+					>
+						{isRunning ? "Running..." : "Run Code"}
+						<span className="ml-2 text-xs text-gray-500">(TODO)</span>
+					</Button>
+					<Button
+						onClick={handleSubmit}
+						disabled={isSubmitting || isRunning}
+						className="px-6"
+					>
+						{isSubmitting ? "Submitting..." : "Submit"}
+					</Button>
+				</div>
 			</div>
 
 			{/* Editor */}

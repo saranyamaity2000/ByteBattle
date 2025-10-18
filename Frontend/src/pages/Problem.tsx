@@ -8,14 +8,21 @@ import Loader from "../components/Loader";
 import { Button } from "../components/ui/button";
 import { ArrowLeft, CheckCircle, Clock, XCircle, AlertCircle } from "lucide-react";
 import type { TestCase } from "../components/TestCaseInput";
+import { submissionService, type SupportedLanguage } from "../services/submissionService";
 
 export default function Problem() {
 	const { problemId } = useParams<{ problemId: string }>();
 	const { problem, isLoading, error } = useProblem(problemId);
 
 	const [isSubmitting, setIsSubmitting] = useState(false);
+	const [isRunning, setIsRunning] = useState(false);
 	const [evaluationResult, setEvaluationResult] = useState<{
-		status: "accepted" | "wrong-answer" | "time-limit-exceeded" | "runtime-error";
+		status:
+			| "accepted"
+			| "wrong-answer"
+			| "time-limit-exceeded"
+			| "runtime-error"
+			| "compilation-error";
 		message: string;
 		testsPassed?: number;
 		totalTests?: number;
@@ -23,51 +30,113 @@ export default function Problem() {
 	} | null>(null);
 	const [showResult, setShowResult] = useState(false);
 
+	// Map language to backend format
+	const mapLanguage = (lang: string): SupportedLanguage => {
+		if (lang === "cpp") return "c++";
+		if (lang === "python") return "python3";
+		return "c++"; // default
+	};
+
+	const handleRunCode = useCallback(
+		async (_code: string, _language: string, _testCases: TestCase[]) => {
+			// TODO: Implement run code functionality
+			// This would run code against custom test cases provided by user
+			setIsRunning(true);
+
+			// Placeholder for future implementation
+			console.log("Run Code - TODO: Not yet implemented", {
+				code: _code,
+				language: _language,
+				testCases: _testCases,
+			});
+
+			// Simulate delay
+			await new Promise((resolve) => setTimeout(resolve, 1000));
+			setIsRunning(false);
+
+			alert(
+				"Run Code feature is coming soon! For now, use Submit to test against all test cases."
+			);
+		},
+		[]
+	);
+
 	const handleSubmit = useCallback(
-		async (code: string, language: string, testCases: TestCase[]) => {
-			console.log("Submitting code:", { code, language, problemId, testCases });
+		async (code: string, language: string) => {
+			if (!problemId) {
+				console.error("Problem ID is missing");
+				return;
+			}
 
-			setIsSubmitting(true);
+			try {
+				setIsSubmitting(true);
+				setShowResult(false);
 
-			// Simulate API call
-			await new Promise((resolve) => setTimeout(resolve, 2000));
+				// Submit code to backend
+				const submission = await submissionService.submitCode({
+					problemId,
+					lang: mapLanguage(language),
+					code,
+				});
 
-			// Mock evaluation result
-			const mockResults = [
-				{
-					status: "accepted" as const,
-					message: "Congratulations! Your solution is correct.",
-					testsPassed: 15,
-					totalTests: 15,
-					executionTime: "45ms",
-				},
-				{
-					status: "wrong-answer" as const,
-					message: "Your solution failed some test cases.",
-					testsPassed: 12,
-					totalTests: 15,
-					executionTime: "32ms",
-				},
-				{
-					status: "time-limit-exceeded" as const,
-					message: "Your solution exceeded the time limit.",
-					testsPassed: 8,
-					totalTests: 15,
-					executionTime: "> 2000ms",
-				},
-				{
-					status: "runtime-error" as const,
-					message: "Your solution encountered a runtime error.",
+				console.log("Submission created:", submission.id);
+
+				// Poll for result
+				const finalSubmission = await submissionService.pollSubmissionStatus(
+					submission.id,
+					30, // max 30 attempts
+					2000 // poll every 2 seconds
+				);
+
+				// Map result to UI format
+				const result = finalSubmission.result;
+				if (result) {
+					const statusMap: Record<
+						string,
+						| "accepted"
+						| "wrong-answer"
+						| "time-limit-exceeded"
+						| "runtime-error"
+						| "compilation-error"
+					> = {
+						ACCEPTED: "accepted",
+						WRONG_ANSWER: "wrong-answer",
+						TIME_LIMIT_EXCEEDED: "time-limit-exceeded",
+						RUNTIME_ERROR: "runtime-error",
+						COMPILATION_ERROR: "compilation-error",
+					};
+
+					setEvaluationResult({
+						status: statusMap[result.verdict] || "runtime-error",
+						message:
+							result.verdict === "ACCEPTED"
+								? "Congratulations! Your solution is correct."
+								: result.error ||
+								  `Your solution failed with verdict: ${result.verdict}`,
+						testsPassed: result.testCasesPassed,
+						totalTests: result.totalTestCases,
+						executionTime: result.executionTime ? `${result.executionTime}ms` : "N/A",
+					});
+					setShowResult(true);
+				} else {
+					throw new Error("No result received from evaluation");
+				}
+			} catch (error) {
+				console.error("Submission error:", error);
+				setEvaluationResult({
+					status: "runtime-error",
+					message:
+						error instanceof Error
+							? error.message
+							: "Failed to submit code. Please try again.",
 					testsPassed: 0,
-					totalTests: 15,
+					totalTests: 0,
 					executionTime: "N/A",
-				},
-			];
-
-			const randomResult = mockResults[Math.floor(Math.random() * mockResults.length)];
-			setEvaluationResult(randomResult);
-			setIsSubmitting(false);
-			setShowResult(true);
+				});
+				setShowResult(true);
+			} finally {
+				setIsSubmitting(false);
+			}
 		},
 		[problemId]
 	);
@@ -291,7 +360,9 @@ export default function Problem() {
 	const rightPane = (
 		<LightCodeEditor
 			initialCode={problem.starterCode}
+			onRunCode={handleRunCode}
 			onSubmit={handleSubmit}
+			isRunning={isRunning}
 			isSubmitting={isSubmitting}
 		/>
 	);

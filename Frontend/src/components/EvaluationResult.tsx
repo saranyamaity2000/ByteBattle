@@ -6,7 +6,12 @@ interface EvaluationResultProps {
 	isOpen: boolean;
 	onClose: () => void;
 	result: {
-		status: "accepted" | "wrong-answer" | "time-limit-exceeded" | "runtime-error";
+		status:
+			| "accepted"
+			| "wrong-answer"
+			| "time-limit-exceeded"
+			| "runtime-error"
+			| "compilation-error";
 		message: string;
 		testsPassed?: number;
 		totalTests?: number;
@@ -26,6 +31,7 @@ export default function EvaluationResult({ isOpen, onClose, result }: Evaluation
 			case "time-limit-exceeded":
 				return <Clock className="h-12 w-12 text-orange-500" />;
 			case "runtime-error":
+			case "compilation-error":
 				return <AlertCircle className="h-12 w-12 text-red-500" />;
 			default:
 				return <XCircle className="h-12 w-12 text-gray-500" />;
@@ -41,6 +47,7 @@ export default function EvaluationResult({ isOpen, onClose, result }: Evaluation
 			case "time-limit-exceeded":
 				return "text-orange-600";
 			case "runtime-error":
+			case "compilation-error":
 				return "text-red-600";
 			default:
 				return "text-gray-600";
@@ -57,6 +64,8 @@ export default function EvaluationResult({ isOpen, onClose, result }: Evaluation
 				return "Time Limit Exceeded";
 			case "runtime-error":
 				return "Runtime Error";
+			case "compilation-error":
+				return "Compilation Error";
 			default:
 				return "Unknown Error";
 		}
