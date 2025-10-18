@@ -7,6 +7,7 @@ import EvaluationResult from "../components/EvaluationResult";
 import Loader from "../components/Loader";
 import { Button } from "../components/ui/button";
 import { ArrowLeft, CheckCircle, Clock, XCircle, AlertCircle } from "lucide-react";
+import type { TestCase } from "../components/TestCaseInput";
 
 export default function Problem() {
 	const { problemId } = useParams<{ problemId: string }>();
@@ -23,8 +24,8 @@ export default function Problem() {
 	const [showResult, setShowResult] = useState(false);
 
 	const handleSubmit = useCallback(
-		async (code: string, language: string) => {
-			console.log("Submitting code:", { code, language, problemId });
+		async (code: string, language: string, testCases: TestCase[]) => {
+			console.log("Submitting code:", { code, language, problemId, testCases });
 
 			setIsSubmitting(true);
 

@@ -2,12 +2,14 @@ import { useState, useCallback, useRef } from "react";
 import { Editor, type OnMount } from "@monaco-editor/react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { Button } from "./ui/button";
+import VerticalResizablePane from "./VerticalResizablePane";
+import TestCaseInput, { type TestCase } from "./TestCaseInput";
 
 type EditorInstance = Parameters<OnMount>[0];
 
 interface LightCodeEditorProps {
 	initialCode?: Record<string, string>;
-	onSubmit: (code: string, language: string) => void;
+	onSubmit: (code: string, language: string, testCases: TestCase[]) => void;
 	isSubmitting: boolean;
 }
 
@@ -22,6 +24,7 @@ export default function LightCodeEditor({
 		cpp: initialCode.cpp || "// Your code here",
 		python: initialCode.python || "# Your code here",
 	}));
+	const [testCases, setTestCases] = useState<TestCase[]>([]);
 	const editorRef = useRef<EditorInstance | null>(null);
 
 	const languages = [
@@ -85,10 +88,15 @@ export default function LightCodeEditor({
 	}, []);
 
 	const handleSubmit = useCallback(() => {
-		onSubmit(codeByLanguage[language], language);
-	}, [codeByLanguage, language, onSubmit]);
+		onSubmit(codeByLanguage[language], language, testCases);
+	}, [codeByLanguage, language, testCases, onSubmit]);
 
-	return (
+	const handleTestCasesChange = useCallback((newTestCases: TestCase[]) => {
+		setTestCases(newTestCases);
+	}, []);
+
+	// Editor component
+	const editorPane = (
 		<div className="h-full flex flex-col bg-white">
 			{/* Header */}
 			<div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gray-50">
@@ -168,5 +176,18 @@ export default function LightCodeEditor({
 				/>
 			</div>
 		</div>
+	);
+
+	// Test cases pane
+	const testCasesPane = <TestCaseInput onTestCasesChange={handleTestCasesChange} />;
+
+	return (
+		<VerticalResizablePane
+			topPane={editorPane}
+			bottomPane={testCasesPane}
+			defaultHeight={70}
+			minHeight={40}
+			maxHeight={85}
+		/>
 	);
 }
