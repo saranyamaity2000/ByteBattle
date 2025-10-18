@@ -4,6 +4,8 @@ import { fastifyServerOptions } from "./configs/server.config";
 import { connectDB } from "./configs/db.config";
 import { envConfig } from "./configs";
 import { initializeSupabase } from "./utils/auth.middleware";
+import fastifyCors from "@fastify/cors";
+import fastifyRateLimit from "@fastify/rate-limit";
 
 export async function buildServer() {
 	const app = fastify({
@@ -28,6 +30,18 @@ export async function buildServer() {
 
 	// database connection
 	await connectDB(app);
+
+	// CORS setup to allow all origins
+	await app.register(fastifyCors, {
+		origin: "*",
+		methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+	});
+
+	// Rate limiting (limit each IP to 60 requests per minute)
+	await app.register(fastifyRateLimit, {
+		max: 60,
+		timeWindow: "1 minute",
+	});
 
 	// basic routes registering
 	app.register(v1Routes, {

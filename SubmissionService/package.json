@@ -24,7 +24,9 @@
 		"typescript": "^5.9.2"
 	},
 	"dependencies": {
+		"@fastify/cors": "^11.1.0",
 		"@fastify/error": "^4.2.0",
+		"@fastify/rate-limit": "^10.3.0",
 		"@supabase/supabase-js": "^2.75.0",
 		"amqplib": "^0.10.9",
 		"axios": "^1.12.2",
