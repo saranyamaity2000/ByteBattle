@@ -35,6 +35,7 @@ export async function buildServer() {
 	await app.register(fastifyCors, {
 		origin: "*",
 		methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+		allowedHeaders: ["X-API-KEY"],
 	});
 
 	// Rate limiting (limit each IP to 60 requests per minute)

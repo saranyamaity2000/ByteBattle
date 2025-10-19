@@ -1,5 +1,7 @@
 import { FastifyRequest, FastifyReply } from "fastify";
 import { createClient, SupabaseClient, User } from "@supabase/supabase-js";
+import { envConfig } from "../configs";
+import { InternalServerError } from "./errors";
 
 // Extend Fastify request with user property
 declare module "fastify" {
@@ -109,5 +111,23 @@ export async function optionalSupabaseAuth(
 	} catch (error) {
 		// Don't fail the request, just log the error
 		request.log.error({ error }, "Optional auth error");
+	}
+}
+
+export async function verifyInternalAccess(
+	request: FastifyRequest,
+	reply: FastifyReply
+): Promise<void> {
+	try {
+		const xApiKey = request.headers["X-Api-Key".toLowerCase()];
+		if (!xApiKey || xApiKey !== envConfig.X_API_KEY) {
+			return reply.code(403).send({
+				error: "Forbidden",
+				message: "No Access",
+			});
+		}
+	} catch (error) {
+		request.log.error({ error }, "Internal access verification error");
+		throw new InternalServerError("Internal Server Error");
 	}
 }

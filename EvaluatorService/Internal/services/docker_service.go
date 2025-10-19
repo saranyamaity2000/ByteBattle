@@ -6,7 +6,6 @@ import (
 	"io"
 	"log"
 	"os"
-	"time"
 
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/image"
@@ -77,11 +76,7 @@ func (d *dockerServiceImpl) RunCodeInContainer(codeLang lang.Language, code, inp
 		AutoRemove: false, // this will automatically remove not remove container after execution (we have to remove once logs are fetched)
 	}
 
-	// Create container with timeout context
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*time.Duration(constraint.TimeLimitSec))
-	defer cancel()
-
-	resp, err := d.dockerCli.ContainerCreate(ctx, containerConfig, hostConfig, nil, nil, "")
+	resp, err := d.dockerCli.ContainerCreate(context.Background(), containerConfig, hostConfig, nil, nil, "")
 	if err != nil {
 		return nil, err
 	}
@@ -91,17 +86,21 @@ func (d *dockerServiceImpl) RunCodeInContainer(codeLang lang.Language, code, inp
 	})
 
 	// Start the container
-	if err := d.dockerCli.ContainerStart(ctx, resp.ID, container.StartOptions{}); err != nil {
+	if err := d.dockerCli.ContainerStart(context.Background(), resp.ID, container.StartOptions{}); err != nil {
 		return nil, err
 	}
 
+	// Create container with timeout context
+	timeoutCtx, cancel := context.WithTimeout(context.Background(), constraint.TimeLimit)
+	defer cancel()
+
 	// Wait for container to finish
-	statusCh, errCh := d.dockerCli.ContainerWait(ctx, resp.ID, container.WaitConditionNotRunning)
+	statusCh, errCh := d.dockerCli.ContainerWait(timeoutCtx, resp.ID, container.WaitConditionNotRunning)
 	select {
 	case err := <-errCh:
 		if err != nil {
 			// Check if the error is due to context timeout (TLE)
-			if ctx.Err() == context.DeadlineExceeded {
+			if timeoutCtx.Err() == context.DeadlineExceeded {
 				return &models.ExecutionResult{
 					TimeLimitExceeded: true,
 				}, nil
@@ -117,8 +116,6 @@ func (d *dockerServiceImpl) RunCodeInContainer(codeLang lang.Language, code, inp
 	}
 
 	// during reading logs, we should not use timeout context as it will be killed
-	// Docker multiplexes stdout/stderr with 8-byte headers when Tty=false.
-	// Use stdcopy.StdCopy to demultiplex and strip those headers.
 	logReader, err := d.dockerCli.ContainerLogs(context.Background(), resp.ID, container.LogsOptions{
 		ShowStdout: true,
 		ShowStderr: true,

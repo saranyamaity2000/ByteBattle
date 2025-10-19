@@ -142,10 +142,10 @@ func (pool *SubmissionWorkerPool) processRawSubmission(workerID int, rawSubmissi
 	log.Printf("Worker %d: Processing submission %s (%s)", workerID, submission.SubmissionID, submission.Language)
 	log.Printf("Worker %d: Code: %s", workerID, submission.Code[:1])
 
-	err := pool.submissionService.EvaluateSubmission(submission)
-	if err != nil {
-		return fmt.Errorf("evaluation failed: %w", err)
+	if err := pool.submissionService.EvaluateSubmission(submission); err != nil {
+		log.Printf("Worker %d: Failed to evaluate submission: %v", workerID, err)
+		return err
 	}
-	log.Printf("Worker %d: Evaluation succeeded for %s", workerID, submission.SubmissionID)
+	log.Printf("Worker %d: Successfully evaluated submission", workerID)
 	return nil
 }

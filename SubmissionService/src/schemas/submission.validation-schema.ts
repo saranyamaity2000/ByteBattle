@@ -1,5 +1,5 @@
 import { FastifySchema } from "fastify";
-import { SupportedSubmissionLang, SubmissionVerdict } from "../models/submission.model";
+import { SupportedSubmissionLang } from "../models/submission.model";
 
 // JSON Schema for creating a submission
 export const createSubmissionSchema: FastifySchema["body"] = {
@@ -39,11 +39,9 @@ export const updateSubmissionSchema: FastifySchema["body"] = {
 		},
 		result: {
 			type: "object",
-			required: ["verdict"],
 			properties: {
 				verdict: {
 					type: "string",
-					enum: Object.values(SubmissionVerdict),
 				},
 				score: {
 					type: "number",

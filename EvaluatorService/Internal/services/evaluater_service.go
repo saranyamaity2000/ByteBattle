@@ -4,9 +4,11 @@ import (
 	"fmt"
 	"log"
 	"strings"
+	"time"
 
 	"maitysaranya.com/EvaluatorService/Internal/client"
 	"maitysaranya.com/EvaluatorService/Internal/models"
+	"maitysaranya.com/EvaluatorService/Internal/utility"
 )
 
 type EvaluaterService interface {
@@ -14,8 +16,9 @@ type EvaluaterService interface {
 }
 
 type evaluaterServiceImpl struct {
-	dockerService DockerCodeRunService
-	problemClient client.IProblemClient
+	dockerService    DockerCodeRunService
+	problemClient    client.IProblemClient
+	submissionClient client.ISubmissionClient
 }
 
 func (s *evaluaterServiceImpl) EvaluateSubmission(submission models.ProblemSubmission) error {
@@ -24,40 +27,44 @@ func (s *evaluaterServiceImpl) EvaluateSubmission(submission models.ProblemSubmi
 	if err != nil {
 		return fmt.Errorf("failed to get testcases: %w", err)
 	}
-	testcasesPassed := 0
+
 	for testIndex, testcase := range problemTestcases {
 		result, err := s.dockerService.RunCodeInContainer(submission.Language, submission.Code, testcase.Input, models.ProblemConstraint{ // TODO: get constraint from problem
-			TimeLimitSec:  2,   // Example time limit
-			MemoryLimitMB: 256, // Example memory limit in MB
+			TimeLimit:     2 * time.Second, // TODO: move to config
+			MemoryLimitMB: 256,             // TODO: move to config
 		})
 		if err != nil {
-			return fmt.Errorf("failed to run code in container: %w", err)
+			return s.submissionClient.MarkFailed(submission.SubmissionID, err.Error())
 		}
 
 		// TODO: Handle the result in a separate function + update the submission status through Submission Client (to be added)
 		if result.TimeLimitExceeded {
-			return fmt.Errorf("time limit exceeded")
+			return s.submissionClient.MarkTimeLimitExceeded(submission.SubmissionID)
 		} else if result.MemoryLimitExceeded {
-			return fmt.Errorf("memory limit exceeded")
+			return s.submissionClient.MarkMemoryLimitExceeded(submission.SubmissionID)
 		} else if result.Error != "" {
-			fmt.Printf("Testcase failed: %s\n", result.Error)
-		}
-
-		expected := strings.TrimRight(testcase.Output, "\r\n")
-		got := strings.TrimRight(result.Output, "\r\n")
-		if expected != got {
-			fmt.Printf("Testcase %d Failed: expected %q, got %q\n", testIndex+1, expected, got)
+			errorType := utility.If(result.Output == "CS\n", "Runtime Error", "Compilation Error") // CS Stands for Compilation Success
+			if errorType == "Runtime Error" {
+				return s.submissionClient.MarkCompilationError(submission.SubmissionID, result.Error)
+			} else {
+				return s.submissionClient.MarkRuntimeError(submission.SubmissionID, result.Error)
+			}
 		} else {
-			testcasesPassed++
+			expected := strings.TrimRight(testcase.Output, "\r\n")
+			got := strings.TrimRight(strings.TrimPrefix(result.Output, "CS\n"), "\r\n")
+			if expected != got {
+				return s.submissionClient.MarkWrongAnswer(submission.SubmissionID, fmt.Sprintf("Failed at testcase #%d", testIndex+1), fmt.Sprintf("Expected Output:\n %q,\nReceived Output:\n %q", expected, got))
+			}
 		}
 	}
-	log.Printf("Testcases passed: %d/%d\n", testcasesPassed, len(problemTestcases))
-	return nil
+	log.Println("All testcases passed")
+	return s.submissionClient.MarkAccepted(submission.SubmissionID)
 }
 
-func NewEvaludaterService(dockerService DockerCodeRunService, problemClient client.IProblemClient) EvaluaterService {
+func NewEvaludaterService(dockerService DockerCodeRunService, problemClient client.IProblemClient, submissionClient client.ISubmissionClient) EvaluaterService {
 	return &evaluaterServiceImpl{
-		dockerService: dockerService,
-		problemClient: problemClient,
+		dockerService:    dockerService,
+		problemClient:    problemClient,
+		submissionClient: submissionClient,
 	}
 }

@@ -33,7 +33,9 @@ func SetupRabbitMQWorkers() {
 	}
 
 	problemClient := client.NewProblemClient(config.AppConfig.ProblemServiceBaseUrl)
-	submissionService := services.NewEvaludaterService(dockerService, problemClient)
+	submissionClient := client.NewSubmissionClient(config.AppConfig.SubmissionServiceBaseUrl)
+
+	submissionService := services.NewEvaludaterService(dockerService, problemClient, submissionClient)
 	workerPool := pool.NewSubmissionWorkerPool(
 		rabbitConn,
 		config.AppConfig.QueueName,

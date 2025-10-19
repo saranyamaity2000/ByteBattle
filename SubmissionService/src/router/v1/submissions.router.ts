@@ -5,7 +5,7 @@ import {
 	updateSubmissionSchema,
 	submissionParamsSchema,
 } from "../../schemas/submission.validation-schema";
-import { verifySupabaseToken } from "../../utils/auth.middleware";
+import { verifyInternalAccess, verifySupabaseToken } from "../../utils/auth.middleware";
 import {
 	CreateSubmissionRequestDTO,
 	UpdateSubmissionStatusRequestDTO,
@@ -48,7 +48,7 @@ export async function submissionRoutes(fastify: FastifyInstance, options: Submis
 	}>(
 		"/:id",
 		{
-			preHandler: verifySupabaseToken,
+			preHandler: verifyInternalAccess,
 			schema: {
 				params: submissionParamsSchema,
 				body: updateSubmissionSchema,

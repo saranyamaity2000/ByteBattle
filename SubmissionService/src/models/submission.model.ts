@@ -15,7 +15,7 @@ export enum SubmissionVerdict {
 	COMPILATION_ERROR = "COMPILATION_ERROR",
 }
 export interface ISubmissionResult {
-	verdict: SubmissionVerdict;
+	verdict: SubmissionVerdict | string;
 	score?: number;
 	executionTime?: number;
 	memoryUsed?: number;

@@ -7,19 +7,23 @@ func init() {
 }
 
 type ConfigType struct {
-	RabbitMQURL string
-	PoolSize    int
-	QueueName   string
-	ProblemServiceBaseUrl string
+	RabbitMQURL              string
+	PoolSize                 int
+	QueueName                string
+	ProblemServiceBaseUrl    string
+	SubmissionServiceBaseUrl string
+	XApiKey                  string
 }
 
 var AppConfig ConfigType
 
 func LoadEnvConfig() {
 	AppConfig = ConfigType{
-		RabbitMQURL: utility_env.GetString("RABBITMQ_URL", "amqp://guest:guest@localhost:5672/"),
-		PoolSize:    utility_env.GetInt("POOL_SIZE", 2),
-		QueueName:   utility_env.GetString("QUEUE_NAME", "submission_queue"),
-		ProblemServiceBaseUrl: utility_env.GetString("PROBLEM_SERVICE_BASE_URL", "http://localhost:3000"),
+		RabbitMQURL:              utility_env.GetString("RABBITMQ_URL", "amqp://guest:guest@localhost:5672/"),
+		PoolSize:                 utility_env.GetInt("POOL_SIZE", 2),
+		QueueName:                utility_env.GetString("QUEUE_NAME", "submission_queue"),
+		ProblemServiceBaseUrl:    utility_env.GetString("PROBLEM_SERVICE_BASE_URL", "http://localhost:3000"),
+		SubmissionServiceBaseUrl: utility_env.GetString("SUBMISSION_SERVICE_BASE_URL", "http://localhost:3001"),
+		XApiKey:                  utility_env.GetString("X_API_KEY", ""),
 	}
 }

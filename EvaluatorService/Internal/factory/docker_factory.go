@@ -28,7 +28,7 @@ func (d *dockerCodeFactoryImpl) GetCommandForLanguage(language lang.Language, co
 	case lang.Python3:
 		return []string{
 			"/bin/sh", "-c",
-			fmt.Sprintf("echo '%s' > /tmp/code.py && echo '%s' > /tmp/input.txt && python3 /tmp/code.py < /tmp/input.txt",
+			fmt.Sprintf("echo '%s' > /tmp/code.py && echo '%s' > /tmp/input.txt && echo 'CS' && python3 /tmp/code.py < /tmp/input.txt",
 				code,
 				input,
 			),
@@ -37,7 +37,7 @@ func (d *dockerCodeFactoryImpl) GetCommandForLanguage(language lang.Language, co
 		return []string{
 			"/bin/sh", "-c",
 			fmt.Sprintf(
-				"echo '%s' > /tmp/code.cpp && echo '%s' > /tmp/input.txt && g++ /tmp/code.cpp -o /tmp/a.out && /tmp/a.out < /tmp/input.txt",
+				"echo '%s' > /tmp/code.cpp && echo '%s' > /tmp/input.txt && g++ /tmp/code.cpp -o /tmp/a.out && echo 'CS' && /tmp/a.out < /tmp/input.txt",
 				code,
 				input,
 			),
