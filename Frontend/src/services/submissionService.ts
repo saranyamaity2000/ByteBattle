@@ -49,13 +49,18 @@ export interface CreateSubmissionPayload {
 	code: string;
 }
 
+export enum VerdictEnum {
+	Accepted = "accepted",
+	WrongAnswer = "wrong answer",
+	TimeLimitExceeded = "time limit exceeded",
+	MemoryLimitExceeded = "memory limit exceeded",
+	RuntimeError = "runtime error",
+	CompileError = "compilation error",
+	FailedToSubmit = "failed to submit",
+}
+
 export interface SubmissionResult {
-	verdict:
-		| "ACCEPTED"
-		| "WRONG_ANSWER"
-		| "TIME_LIMIT_EXCEEDED"
-		| "RUNTIME_ERROR"
-		| "COMPILATION_ERROR";
+	verdict: VerdictEnum | string;
 	score?: number;
 	executionTime?: number;
 	memoryUsed?: number;

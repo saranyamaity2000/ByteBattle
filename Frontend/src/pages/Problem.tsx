@@ -8,7 +8,12 @@ import Loader from "../components/Loader";
 import { Button } from "../components/ui/button";
 import { ArrowLeft, CheckCircle, Clock, XCircle, AlertCircle } from "lucide-react";
 import type { TestCase } from "../components/TestCaseInput";
-import { submissionService, type SupportedLanguage } from "../services/submissionService";
+import {
+	submissionService,
+	VerdictEnum,
+	type SubmissionResult,
+	type SupportedLanguage,
+} from "../services/submissionService";
 
 export default function Problem() {
 	const { problemId } = useParams<{ problemId: string }>();
@@ -16,18 +21,7 @@ export default function Problem() {
 
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [isRunning, setIsRunning] = useState(false);
-	const [evaluationResult, setEvaluationResult] = useState<{
-		status:
-			| "accepted"
-			| "wrong-answer"
-			| "time-limit-exceeded"
-			| "runtime-error"
-			| "compilation-error";
-		message: string;
-		testsPassed?: number;
-		totalTests?: number;
-		executionTime?: string;
-	} | null>(null);
+	const [evaluationResult, setEvaluationResult] = useState<SubmissionResult | null>(null);
 	const [showResult, setShowResult] = useState(false);
 
 	// Map language to backend format
@@ -91,32 +85,7 @@ export default function Problem() {
 				// Map result to UI format
 				const result = finalSubmission.result;
 				if (result) {
-					const statusMap: Record<
-						string,
-						| "accepted"
-						| "wrong-answer"
-						| "time-limit-exceeded"
-						| "runtime-error"
-						| "compilation-error"
-					> = {
-						ACCEPTED: "accepted",
-						WRONG_ANSWER: "wrong-answer",
-						TIME_LIMIT_EXCEEDED: "time-limit-exceeded",
-						RUNTIME_ERROR: "runtime-error",
-						COMPILATION_ERROR: "compilation-error",
-					};
-
-					setEvaluationResult({
-						status: statusMap[result.verdict] || "runtime-error",
-						message:
-							result.verdict === "ACCEPTED"
-								? "Congratulations! Your solution is correct."
-								: result.error ||
-								  `Your solution failed with verdict: ${result.verdict}`,
-						testsPassed: result.testCasesPassed,
-						totalTests: result.totalTestCases,
-						executionTime: result.executionTime ? `${result.executionTime}ms` : "N/A",
-					});
+					setEvaluationResult(result);
 					setShowResult(true);
 				} else {
 					throw new Error("No result received from evaluation");
@@ -124,14 +93,11 @@ export default function Problem() {
 			} catch (error) {
 				console.error("Submission error:", error);
 				setEvaluationResult({
-					status: "runtime-error",
-					message:
+					verdict: VerdictEnum.FailedToSubmit,
+					error:
 						error instanceof Error
 							? error.message
 							: "Failed to submit code. Please try again.",
-					testsPassed: 0,
-					totalTests: 0,
-					executionTime: "N/A",
 				});
 				setShowResult(true);
 			} finally {
