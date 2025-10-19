@@ -3,6 +3,7 @@ package client
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"strings"
 
@@ -22,8 +23,7 @@ func (p *problemClientImp) GetTestcases(slug string) ([]models.ProblemTestCase, 
 	relativePath := fmt.Sprintf("testcases/download/%s", slug)
 	fullApiPath := p.baseUrl + "/" + relativePath
 
-	fmt.Println("Fetching test cases for problem slug: " + slug)
-	fmt.Println("Full API path: " + fullApiPath)
+	log.Println("Fetching test cases for problem slug: " + slug)
 	resp, err := http.Get(fullApiPath)
 	if err != nil {
 		return nil, err
@@ -38,6 +38,7 @@ func (p *problemClientImp) GetTestcases(slug string) ([]models.ProblemTestCase, 
 	if err := json.NewDecoder(resp.Body).Decode(&testCases); err != nil {
 		return nil, err
 	}
+	log.Println("Test cases fetched successfully")
 	return testCases, nil
 }
 

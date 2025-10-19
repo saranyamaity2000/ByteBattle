@@ -10,6 +10,8 @@ require (
 	github.com/rabbitmq/amqp091-go v1.10.0
 )
 
+require golang.org/x/net v0.43.0 // indirect
+
 require (
 	github.com/Microsoft/go-winio v0.4.21 // indirect
 	github.com/containerd/errdefs v1.0.0 // indirect
@@ -21,6 +23,7 @@ require (
 	github.com/felixge/httpsnoop v1.0.4 // indirect
 	github.com/go-logr/logr v1.4.3 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
+	github.com/go-resty/resty/v2 v2.16.5
 	github.com/moby/docker-image-spec v1.3.1 // indirect
 	github.com/moby/sys/atomicwriter v0.1.0 // indirect
 	github.com/moby/term v0.5.2 // indirect
