@@ -1,6 +1,5 @@
 import axios, { AxiosInstance, InternalAxiosRequestConfig, AxiosResponse, AxiosError } from "axios";
 import { FastifyBaseLogger } from "fastify";
-import { BadRequestError } from "../utils/errors";
 
 export interface ProblemClientResponse {
 	data: {

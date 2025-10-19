@@ -1,37 +1,27 @@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "./ui/dialog";
 import { Button } from "./ui/button";
 import { CheckCircle, XCircle, Clock, AlertCircle } from "lucide-react";
+import { VerdictEnum, type SubmissionResult } from "@/services/submissionService";
 
 interface EvaluationResultProps {
 	isOpen: boolean;
 	onClose: () => void;
-	result: {
-		status:
-			| "accepted"
-			| "wrong-answer"
-			| "time-limit-exceeded"
-			| "runtime-error"
-			| "compilation-error";
-		message: string;
-		testsPassed?: number;
-		totalTests?: number;
-		executionTime?: string;
-	} | null;
+	result: SubmissionResult | null;
 }
 
 export default function EvaluationResult({ isOpen, onClose, result }: EvaluationResultProps) {
 	if (!result) return null;
 
 	const getStatusIcon = () => {
-		switch (result.status) {
-			case "accepted":
+		switch (result.verdict) {
+			case VerdictEnum.Accepted:
 				return <CheckCircle className="h-12 w-12 text-green-500" />;
-			case "wrong-answer":
+			case VerdictEnum.WrongAnswer:
 				return <XCircle className="h-12 w-12 text-red-500" />;
-			case "time-limit-exceeded":
+			case VerdictEnum.TimeLimitExceeded:
 				return <Clock className="h-12 w-12 text-orange-500" />;
-			case "runtime-error":
-			case "compilation-error":
+			case VerdictEnum.RuntimeError:
+			case VerdictEnum.CompileError:
 				return <AlertCircle className="h-12 w-12 text-red-500" />;
 			default:
 				return <XCircle className="h-12 w-12 text-gray-500" />;
@@ -39,36 +29,23 @@ export default function EvaluationResult({ isOpen, onClose, result }: Evaluation
 	};
 
 	const getStatusColor = () => {
-		switch (result.status) {
-			case "accepted":
+		switch (result.verdict) {
+			case VerdictEnum.Accepted:
 				return "text-green-600";
-			case "wrong-answer":
+			case VerdictEnum.WrongAnswer:
 				return "text-red-600";
-			case "time-limit-exceeded":
+			case VerdictEnum.TimeLimitExceeded:
 				return "text-orange-600";
-			case "runtime-error":
-			case "compilation-error":
+			case VerdictEnum.RuntimeError:
+			case VerdictEnum.CompileError:
 				return "text-red-600";
 			default:
-				return "text-gray-600";
+				return "text-red-600";
 		}
 	};
 
 	const getStatusTitle = () => {
-		switch (result.status) {
-			case "accepted":
-				return "Accepted!";
-			case "wrong-answer":
-				return "Wrong Answer";
-			case "time-limit-exceeded":
-				return "Time Limit Exceeded";
-			case "runtime-error":
-				return "Runtime Error";
-			case "compilation-error":
-				return "Compilation Error";
-			default:
-				return "Unknown Error";
-		}
+		return result.verdict;
 	};
 
 	return (
@@ -84,15 +61,18 @@ export default function EvaluationResult({ isOpen, onClose, result }: Evaluation
 				</DialogHeader>
 
 				<div className="space-y-4 text-center">
-					<DialogDescription className="text-lg">{result.message}</DialogDescription>
-
-					{result.testsPassed !== undefined && result.totalTests !== undefined && (
-						<div className="bg-gray-50 p-4 rounded-lg">
-							<p className="text-sm text-gray-600">
-								Tests Passed: {result.testsPassed}/{result.totalTests}
-							</p>
-						</div>
+					{result.error && (
+						<DialogDescription className="text-lg">{result.error}</DialogDescription>
 					)}
+
+					{result.testCasesPassed !== undefined &&
+						result.totalTestCases !== undefined && (
+							<div className="bg-gray-50 p-4 rounded-lg">
+								<p className="text-sm text-gray-600">
+									Tests Passed: {result.testCasesPassed}/{result.totalTestCases}
+								</p>
+							</div>
+						)}
 
 					{result.executionTime && (
 						<div className="bg-gray-50 p-4 rounded-lg">
