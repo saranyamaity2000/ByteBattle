@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { createClient, SupabaseClient, User } from "@supabase/supabase-js";
+import logger from "../config/logger.config";
 
 // Extend Express Request type to include user
 declare global {
@@ -72,6 +73,7 @@ export async function verifySupabaseToken(
 		} = await supabase.auth.getUser(token);
 
 		if (error || !user) {
+			logger.error("Invalid or expired token");
 			res.status(401).json({
 				error: "Unauthorized",
 				message: "Invalid or expired token",
@@ -96,7 +98,7 @@ export async function verifySupabaseToken(
  */
 export async function optionalSupabaseAuth(
 	req: Request,
-	res: Response,
+	_res: Response,
 	next: NextFunction
 ): Promise<void> {
 	try {

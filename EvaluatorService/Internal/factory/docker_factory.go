@@ -8,7 +8,7 @@ import (
 
 type DockerCodeFactory interface {
 	GetImageForLanguage(language lang.Language) (string, error)
-	GetCommandForLanguage(language lang.Language, code string) ([]string, error)
+	GetCommandForLanguage(language lang.Language, code string, input string) ([]string, error)
 }
 
 type dockerCodeFactoryImpl struct {
@@ -23,12 +23,25 @@ func (d *dockerCodeFactoryImpl) GetImageForLanguage(language lang.Language) (str
 	return image, nil
 }
 
-func (d *dockerCodeFactoryImpl) GetCommandForLanguage(language lang.Language, code string) ([]string, error) {
+func (d *dockerCodeFactoryImpl) GetCommandForLanguage(language lang.Language, code string, input string) ([]string, error) {
 	switch language {
 	case lang.Python3:
-		return []string{"python", "-c", code}, nil
+		return []string{
+			"/bin/sh", "-c",
+			fmt.Sprintf("echo '%s' > /tmp/code.py && echo '%s' > /tmp/input.txt && python3 /tmp/code.py < /tmp/input.txt",
+				code,
+				input,
+			),
+		}, nil
 	case lang.CPlusPlus:
-		return []string{"/bin/sh", "-c", fmt.Sprintf("echo '%s' > /tmp/code.cpp && g++ /tmp/code.cpp -o /tmp/a.out && /tmp/a.out", code)}, nil
+		return []string{
+			"/bin/sh", "-c",
+			fmt.Sprintf(
+				"echo '%s' > /tmp/code.cpp && echo '%s' > /tmp/input.txt && g++ /tmp/code.cpp -o /tmp/a.out && /tmp/a.out < /tmp/input.txt",
+				code,
+				input,
+			),
+		}, nil
 	default:
 		return nil, fmt.Errorf("unsupported language: %s", language)
 	}

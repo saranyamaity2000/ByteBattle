@@ -1,7 +1,7 @@
 import express from "express";
 import { uploadTestcaseFileMiddleware } from "../../middlewares/upload.middleware";
 import { testcaseController } from "../../controllers/testcase.controller";
-import { verifySupabaseToken } from "../../middlewares/auth.middleware";
+import { verifySupabaseToken, optionalSupabaseAuth } from "../../middlewares/auth.middleware";
 
 export const testcaseRouter = express.Router();
 
@@ -15,6 +15,6 @@ testcaseRouter.post(
 
 testcaseRouter.get(
 	"/download/:problemSlug",
-	verifySupabaseToken,
+	optionalSupabaseAuth,
 	testcaseController.downloadTestCaseFile
 );

@@ -7,6 +7,7 @@ import (
 	"sync"
 	"syscall"
 
+	"maitysaranya.com/EvaluatorService/Internal/client"
 	"maitysaranya.com/EvaluatorService/Internal/config"
 	"maitysaranya.com/EvaluatorService/Internal/factory"
 	"maitysaranya.com/EvaluatorService/Internal/models/lang"
@@ -31,7 +32,8 @@ func SetupRabbitMQWorkers() {
 		}
 	}
 
-	submissionService := services.NewSubmissionService(dockerService)
+	problemClient := client.NewProblemClient(config.AppConfig.ProblemServiceBaseUrl)
+	submissionService := services.NewEvaludaterService(dockerService, problemClient)
 	workerPool := pool.NewSubmissionWorkerPool(
 		rabbitConn,
 		config.AppConfig.QueueName,

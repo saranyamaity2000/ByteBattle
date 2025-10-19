@@ -10,6 +10,7 @@ type ConfigType struct {
 	RabbitMQURL string
 	PoolSize    int
 	QueueName   string
+	ProblemServiceBaseUrl string
 }
 
 var AppConfig ConfigType
@@ -19,5 +20,6 @@ func LoadEnvConfig() {
 		RabbitMQURL: utility_env.GetString("RABBITMQ_URL", "amqp://guest:guest@localhost:5672/"),
 		PoolSize:    utility_env.GetInt("POOL_SIZE", 2),
 		QueueName:   utility_env.GetString("QUEUE_NAME", "submission_queue"),
+		ProblemServiceBaseUrl: utility_env.GetString("PROBLEM_SERVICE_BASE_URL", "http://localhost:3000"),
 	}
 }
