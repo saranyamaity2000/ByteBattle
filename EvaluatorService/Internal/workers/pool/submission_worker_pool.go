@@ -20,11 +20,11 @@ type SubmissionWorkerPool struct {
 	ctx                   context.Context
 	cancel                context.CancelFunc
 	wg                    sync.WaitGroup
-	submissionService     services.SubmissionService
+	submissionService     services.EvaluaterService
 }
 
 // NewSubmissionWorkerPool creates a new worker pool
-func NewSubmissionWorkerPool(rabbitQueueConnection *rabbitmq.Connection, queueName string, workerCount int, submissionService services.SubmissionService) *SubmissionWorkerPool {
+func NewSubmissionWorkerPool(rabbitQueueConnection *rabbitmq.Connection, queueName string, workerCount int, submissionService services.EvaluaterService) *SubmissionWorkerPool {
 	ctx, cancel := context.WithCancel(context.Background())
 	return &SubmissionWorkerPool{
 		rabbitQueueConnection: rabbitQueueConnection,
@@ -86,8 +86,8 @@ func (pool *SubmissionWorkerPool) startWorker(workerID int) {
 		return
 	}
 
-	// Start consuming messages
-	messages, err := ch.Consume(
+	// Start consuming messageChan
+	messageChan, err := ch.Consume(
 		pool.queueName, // queue
 		"",             // consumer tag
 		false,          // auto ack (we'll ack manually)
@@ -109,7 +109,7 @@ func (pool *SubmissionWorkerPool) startWorker(workerID int) {
 		case <-pool.ctx.Done():
 			log.Printf("Worker %d: Received shutdown signal, stopping...", workerID)
 			return
-		case message, ok := <-messages:
+		case message, ok := <-messageChan:
 			if !ok {
 				log.Printf("Worker %d: Message channel closed, stopping...", workerID)
 				return
@@ -140,13 +140,12 @@ func (pool *SubmissionWorkerPool) processRawSubmission(workerID int, rawSubmissi
 	}
 
 	log.Printf("Worker %d: Processing submission %s (%s)", workerID, submission.SubmissionID, submission.Language)
-	log.Printf("Worker %d: Code: %s", workerID, submission.Code)
+	log.Printf("Worker %d: Code: %s", workerID, submission.Code[:1])
 
-	result, err := pool.submissionService.EvaluateSubmission(submission)
-
+	err := pool.submissionService.EvaluateSubmission(submission)
 	if err != nil {
 		return fmt.Errorf("evaluation failed: %w", err)
 	}
-	log.Printf("Worker %d: Evaluation succeeded for %s: %s", workerID, submission.SubmissionID, result)
+	log.Printf("Worker %d: Evaluation succeeded for %s", workerID, submission.SubmissionID)
 	return nil
 }

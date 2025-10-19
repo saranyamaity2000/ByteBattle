@@ -15,13 +15,17 @@ type ProblemSubmission struct {
 
 type ProblemConstraint struct {
 	TimeLimitSec  time.Duration
-	MemoryLimitMb int64 // in bytes
+	MemoryLimitMB int64 // in MegaBytes
 }
 
 type ExecutionResult struct {
-	Output        string
-	Error         string
-	ExitCode      int64
-	ExecutionTime time.Duration
-	MemoryUsage   uint64
+	Output              string
+	Error               string
+	TimeLimitExceeded   bool
+	MemoryLimitExceeded bool
+}
+
+type ProblemTestCase struct {
+	Input  string `json:"input"`
+	Output string `json:"output"`
 }

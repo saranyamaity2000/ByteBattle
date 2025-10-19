@@ -1,8 +1,8 @@
 package services
 
 import (
+	"bytes"
 	"context"
-	"fmt"
 	"io"
 	"log"
 	"os"
@@ -11,6 +11,7 @@ import (
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/image"
 	"github.com/docker/docker/client"
+	"github.com/docker/docker/pkg/stdcopy"
 	"maitysaranya.com/EvaluatorService/Internal/factory"
 	"maitysaranya.com/EvaluatorService/Internal/models"
 	"maitysaranya.com/EvaluatorService/Internal/models/lang"
@@ -18,7 +19,7 @@ import (
 
 type DockerCodeRunService interface {
 	PullImageByCodingLang(codingLang lang.Language) error
-	RunCodeInContainer(codeLang lang.Language, code string, constraint models.ProblemConstraint) (string, error)
+	RunCodeInContainer(codeLang lang.Language, code string, input string, constraint models.ProblemConstraint) (*models.ExecutionResult, error)
 }
 
 type dockerServiceImpl struct {
@@ -50,15 +51,15 @@ func (d *dockerServiceImpl) PullImageByCodingLang(codingLang lang.Language) erro
 	return nil
 }
 
-func (d *dockerServiceImpl) RunCodeInContainer(codeLang lang.Language, code string, constraint models.ProblemConstraint) (string, error) {
+func (d *dockerServiceImpl) RunCodeInContainer(codeLang lang.Language, code, input string, constraint models.ProblemConstraint) (*models.ExecutionResult, error) {
 	image, err := d.dockerCodeFactory.GetImageForLanguage(codeLang)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	cmd, err := d.dockerCodeFactory.GetCommandForLanguage(codeLang, code)
+	cmd, err := d.dockerCodeFactory.GetCommandForLanguage(codeLang, code, input)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	// container configuration
@@ -71,9 +72,9 @@ func (d *dockerServiceImpl) RunCodeInContainer(codeLang lang.Language, code stri
 	// Host configuration with resource limits
 	hostConfig := &container.HostConfig{
 		Resources: container.Resources{
-			Memory: int64(constraint.MemoryLimitMb) * 1024 * 1024, // Convert MB to bytes
+			Memory: int64(constraint.MemoryLimitMB) * 1024 * 1024, // Convert MB to bytes
 		},
-		AutoRemove: true, // this will automatically remove container after execution
+		AutoRemove: false, // this will automatically remove not remove container after execution (we have to remove once logs are fetched)
 	}
 
 	// Create container with timeout context
@@ -82,12 +83,16 @@ func (d *dockerServiceImpl) RunCodeInContainer(codeLang lang.Language, code stri
 
 	resp, err := d.dockerCli.ContainerCreate(ctx, containerConfig, hostConfig, nil, nil, "")
 	if err != nil {
-		return "", err
+		return nil, err
 	}
+	// remove container at the end of the function (notusing timeout context as it has to be killed)
+	defer d.dockerCli.ContainerRemove(context.Background(), resp.ID, container.RemoveOptions{
+		Force: true,
+	})
 
 	// Start the container
 	if err := d.dockerCli.ContainerStart(ctx, resp.ID, container.StartOptions{}); err != nil {
-		return "", err
+		return nil, err
 	}
 
 	// Wait for container to finish
@@ -97,31 +102,43 @@ func (d *dockerServiceImpl) RunCodeInContainer(codeLang lang.Language, code stri
 		if err != nil {
 			// Check if the error is due to context timeout (TLE)
 			if ctx.Err() == context.DeadlineExceeded {
-				return "", fmt.Errorf("terminated due to Time Limit Exceeded (TLE)")
+				return &models.ExecutionResult{
+					TimeLimitExceeded: true,
+				}, nil
 			}
-			return "", err
+			return nil, err
 		}
 	case waitResp := <-statusCh:
 		if waitResp.StatusCode == 137 {
-			return "", fmt.Errorf("terminated due to Memory Limit Exceeded (MLE)")
+			return &models.ExecutionResult{
+				MemoryLimitExceeded: true,
+			}, nil
 		}
 	}
 
-	out, err := d.dockerCli.ContainerLogs(ctx, resp.ID, container.LogsOptions{
+	// during reading logs, we should not use timeout context as it will be killed
+	// Docker multiplexes stdout/stderr with 8-byte headers when Tty=false.
+	// Use stdcopy.StdCopy to demultiplex and strip those headers.
+	logReader, err := d.dockerCli.ContainerLogs(context.Background(), resp.ID, container.LogsOptions{
 		ShowStdout: true,
 		ShowStderr: true,
 	})
 	if err != nil {
-		return "", err
+		return nil, err
 	}
-	defer out.Close()
+	defer logReader.Close()
 
-	output, err := io.ReadAll(out)
-	if err != nil {
-		return "", err
+	// Create buffers to capture stdout and stderr separately
+	var stdoutBuf, stderrBuf bytes.Buffer
+	// StdCopy reads from logReader, strips Docker headers, and writes clean output to the buffers
+	if _, err := stdcopy.StdCopy(&stdoutBuf, &stderrBuf, logReader); err != nil {
+		return nil, err
 	}
 
-	return string(output), nil
+	return &models.ExecutionResult{
+		Output: stdoutBuf.String(),
+		Error:  stderrBuf.String(),
+	}, nil
 }
 
 func NewDockerService(dockerCodeFactory factory.DockerCodeFactory) DockerCodeRunService {
