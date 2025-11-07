@@ -230,7 +230,8 @@ export default function CraftProblem() {
 			return;
 		}
 		// loading state due to this handled in useEffect
-		generateProblem(problemGenerationPrompt);
+		await generateProblem(problemGenerationPrompt);
+		setShowAIPromptModal(false);
 	};
 
 	return (

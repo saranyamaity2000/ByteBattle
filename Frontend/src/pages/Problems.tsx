@@ -11,6 +11,7 @@ import {
 	SelectValue,
 } from "../components/ui/select";
 import { ArrowLeft, Filter, AlertCircle, RefreshCw, Settings, EyeOff } from "lucide-react";
+import { Spinner } from "@/components/ui/spinner";
 
 export default function Problems() {
 	const { problems, isLoading, error, refetch } = useProblems();
@@ -60,7 +61,7 @@ export default function Problems() {
 		return (
 			<div className="min-h-screen bg-gradient-to-br from-slate-50 to-gray-100 flex items-center justify-center">
 				<div className="text-center">
-					<div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+					<Spinner className="m-auto size-10 text-blue-600" />
 					<p className="text-gray-600">Loading problems...</p>
 				</div>
 			</div>
