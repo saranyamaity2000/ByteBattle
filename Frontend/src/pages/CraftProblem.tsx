@@ -58,8 +58,7 @@ const MIN_PROMPT_LENGTH = 10;
 function mergeGeneratedProblemWithDefault(generatedProblem: GeneratedApiProblem): ProblemFormData {
 	return {
 		...problemFormDataDefault,
-		statement: generatedProblem.statement,
-		examples: generatedProblem.examples,
+		...generatedProblem,
 	};
 }
 
