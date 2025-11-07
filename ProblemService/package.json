@@ -3,8 +3,9 @@
 	"version": "1.0.0",
 	"main": "index.js",
 	"scripts": {
-		"start": "ts-node src/server.ts",
-		"dev": "nodemon src/server.ts",
+		"start": "tsx src/server.ts",
+		"dev": "tsx watch src/server.ts",
+		"type-check": "tsc --noEmit",
 		"test": "jest",
 		"test:watch": "jest --watch",
 		"test:coverage": "jest --coverage"
@@ -17,10 +18,13 @@
 		"node": ">=22.0.0"
 	},
 	"dependencies": {
+		"@ai-sdk/google": "^2.0.28",
+		"@ai-sdk/openai": "3.0.0-beta.54",
 		"@aws-sdk/client-s3": "^3.872.0",
 		"@aws-sdk/lib-storage": "^3.872.0",
 		"@supabase/supabase-js": "^2.75.0",
 		"@types/mongoose": "^5.11.96",
+		"ai": "6.0.0-beta.93",
 		"cors": "^2.8.5",
 		"dotenv": "^16.4.7",
 		"express": "^5.1.0",
@@ -45,10 +49,9 @@
 		"@types/turndown": "^5.0.5",
 		"jest": "^30.0.5",
 		"mongodb-memory-server": "^10.2.0",
-		"nodemon": "^3.1.9",
 		"supertest": "^7.1.4",
 		"ts-jest": "^29.4.1",
-		"ts-node": "^10.9.2",
+		"tsx": "^4.20.6",
 		"typescript": "^5.8.3"
 	}
 }
