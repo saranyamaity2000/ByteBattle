@@ -2,6 +2,7 @@ import { ProblemService } from "./../services/problem.service";
 import { NextFunction, Request, Response } from "express";
 import { ProblemRepository } from "../repositories/problem.repo";
 import { IProblem } from "../models/problem.model";
+import { generateProblemByAI } from "../generative-ai/problem.ai";
 
 class ProblemController {
 	constructor(private readonly problemService: ProblemService) {}
@@ -67,6 +68,24 @@ class ProblemController {
 		const { slug } = req.params;
 		const publishedProblem = await this.problemService.publishProblem(slug);
 		res.status(200).json({ data: publishedProblem });
+	};
+
+	generateProblemByPrompt = async (
+		req: Request,
+		res: Response,
+		next: NextFunction
+	): Promise<void> => {
+		const { prompt } = req.body;
+		if (!prompt) {
+			res.status(400).json({ message: "Prompt is required" });
+			return;
+		}
+		try {
+			const result = await generateProblemByAI(prompt);
+			res.status(200).json({ data: result });
+		} catch (error) {
+			next(error);
+		}
 	};
 }
 

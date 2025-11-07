@@ -4,6 +4,7 @@ import { validateRequestBody } from "../../validators";
 import {
 	ProblemCreationZodSchema,
 	ProblemUpdateZodSchema,
+	PromptForProblemGenerationSchema,
 } from "../../validators/problem.validator";
 import { verifySupabaseToken, optionalSupabaseAuth } from "../../middlewares/auth.middleware";
 
@@ -29,3 +30,9 @@ problemRouter.put(
 );
 problemRouter.patch("/:slug/publish", verifySupabaseToken, problemController.publishProblem);
 problemRouter.delete("/:slug", verifySupabaseToken, problemController.deleteProblem);
+problemRouter.post(
+	"/generate-problem-by-prompt",
+	verifySupabaseToken,
+	validateRequestBody(PromptForProblemGenerationSchema),
+	problemController.generateProblemByPrompt
+);
