@@ -25,7 +25,7 @@ const getApiBaseUrl = (): string => {
 export const config: AppConfig = {
 	problemServiceApi: {
 		baseUrl: getApiBaseUrl(),
-		timeout: parseInt(import.meta.env.VITE_API_TIMEOUT || "10000", 10),
+		timeout: parseInt(import.meta.env.VITE_API_TIMEOUT || "100000", 10), // default 100 seconds
 		withCredentials: true,
 	},
 };

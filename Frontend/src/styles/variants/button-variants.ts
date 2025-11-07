@@ -13,6 +13,8 @@ export const buttonVariants = cva(
 				secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
 				ghost: "hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50",
 				link: "text-primary underline-offset-4 hover:underline",
+				glowingBorder:
+					"border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50 [background:linear-gradient(theme(colors.background),theme(colors.background))_padding-box,conic-gradient(from_var(--border-angle),theme(colors.slate.400/.2)_80%,theme(colors.blue.500)_86%,theme(colors.cyan.400)_90%,theme(colors.blue.500)_94%,theme(colors.slate.400/.2))_border-box] border-2 border-transparent animate-border",
 			},
 			size: {
 				default: "h-9 px-4 py-2 has-[>svg]:px-3",

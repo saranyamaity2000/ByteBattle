@@ -3,20 +3,25 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./providers/AuthProvider";
 import { useAuthContext } from "./hooks/context-hooks/useAuth";
 import Navbar from "./components/Navbar";
-import PageLoader from "./components/PageLoader";
+import { useEffect } from "react";
 import Home from "./pages/Home";
 import Problems from "./pages/Problems";
 import Problem from "./pages/Problem";
 import CraftProblem from "./pages/CraftProblem";
 import ModifyProblem from "./pages/ModifyProblem";
+import { PageLoaderProvider } from "./providers/PageLoaderProvider";
+import { usePageLoadingSetter } from "./hooks/context-hooks/usePageLoadingSetter";
 
 function AppContent() {
 	const { loading } = useAuthContext();
+	const { setIsPageLoading } = usePageLoadingSetter();
 
+	useEffect(() => {
+		setIsPageLoading(loading);
+	}, [loading, setIsPageLoading]);
 	return (
 		<Router>
 			<div className="min-h-screen">
-				<PageLoader isLoading={loading} />
 				<Navbar />
 				<Routes>
 					<Route path="/" element={<Home />} />
@@ -32,9 +37,11 @@ function AppContent() {
 
 function App() {
 	return (
-		<AuthProvider>
-			<AppContent />
-		</AuthProvider>
+		<PageLoaderProvider>
+			<AuthProvider>
+				<AppContent />
+			</AuthProvider>
+		</PageLoaderProvider>
 	);
 }
 

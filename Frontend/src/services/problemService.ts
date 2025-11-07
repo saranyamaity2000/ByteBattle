@@ -50,7 +50,7 @@ export interface ApiProblem {
 	title: string;
 	slug: string;
 	statement: string;
-	difficulty: string;
+	difficulty: "easy" | "medium" | "hard";
 	examples: {
 		input: string;
 		output: string;
@@ -58,7 +58,7 @@ export interface ApiProblem {
 	}[];
 	constraints: string[];
 	timeLimitMs: number;
-	memoryLimitKb: number;
+	memoryLimitKB: number;
 	author: string;
 	isPublished: boolean;
 	isPremium: boolean;
@@ -71,6 +71,24 @@ export interface ApiProblem {
 	updatedAt: string;
 	__v: number;
 	testcaseUrl: string;
+}
+
+export interface GeneratedApiProblem {
+	title: string;
+	difficulty: "easy" | "medium" | "hard";
+	statement: string;
+	examples: {
+		input: string;
+		output: string;
+		explanation?: string;
+	}[];
+	constraints: string[];
+	timeLimitMs: number;
+	memoryLimitKB: number;
+}
+export interface GeneratedProblemResponseDTO {
+	invalidPromptReason?: string;
+	problem: GeneratedApiProblem;
 }
 
 export interface ApiResponse<T> {
@@ -89,7 +107,7 @@ export interface CreateProblemPayload {
 	}[];
 	constraints?: string[];
 	timeLimitMs?: number;
-	memoryLimitKb?: number;
+	memoryLimitKB?: number;
 	author?: string;
 	isPremium?: boolean;
 	editorial?: string;
@@ -212,6 +230,19 @@ class ProblemService {
 				const message = error.response?.data?.message || "Failed to download testcase";
 				throw new Error(message);
 			}
+			throw error;
+		}
+	}
+
+	async getGeneratedProblem(prompt: string): Promise<GeneratedProblemResponseDTO> {
+		try {
+			const response = await apiClient.post<ApiResponse<GeneratedProblemResponseDTO>>(
+				"/problems/generate-problem-by-prompt",
+				{ prompt }
+			);
+			return response.data.data;
+		} catch (error) {
+			console.error("Error generating problem:", error);
 			throw error;
 		}
 	}
