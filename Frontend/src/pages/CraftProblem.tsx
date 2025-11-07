@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { problemService } from "@/services/problemService";
+import { problemService, type GeneratedApiProblem } from "@/services/problemService";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -9,6 +9,9 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
+import { useGeneratedProblem } from "@/hooks/useGeneratedProblem";
+import { Textarea } from "@/components/ui/textarea";
+import { usePageLoadingSetter } from "@/hooks/context-hooks/usePageLoadingSetter";
 
 interface Example {
 	input: string;
@@ -32,28 +35,69 @@ interface ProblemFormData {
 	companyTags: string[];
 }
 
+const problemFormDataDefault: ProblemFormData = {
+	title: "",
+	slug: "",
+	statement: "",
+	difficulty: "easy",
+	examples: [{ input: "", output: "", explanation: "" }],
+	constraints: [""],
+	timeLimitMs: 1000,
+	memoryLimitKb: 65536,
+	author: "",
+	isPremium: false,
+	editorial: "",
+	topicTags: [""],
+	companyTags: [""],
+};
+
+//TODO: Should be moved to a dymamic place
+const MAX_PROMPT_LENGTH = 500;
+const MIN_PROMPT_LENGTH = 10;
+
+function mergeGeneratedProblemWithDefault(generatedProblem: GeneratedApiProblem): ProblemFormData {
+	return {
+		...problemFormDataDefault,
+		statement: generatedProblem.statement,
+		examples: generatedProblem.examples,
+	};
+}
+
 export default function CraftProblem() {
 	const navigate = useNavigate();
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const [validationErrors, setValidationErrors] = useState<string[]>([]);
 	const [showErrorModal, setShowErrorModal] = useState(false);
+	const [showAIPromptModal, setShowAIPromptModal] = useState(false);
+	const [problemGenerationPrompt, setProblemGenerationPrompt] = useState("");
+	const [promptSubmissionError, setPromptSubmissionError] = useState<string | null>(null);
 
-	const [formData, setFormData] = useState<ProblemFormData>({
-		title: "",
-		slug: "",
-		statement: "",
-		difficulty: "easy",
-		examples: [{ input: "", output: "", explanation: "" }],
-		constraints: [""],
-		timeLimitMs: 1000,
-		memoryLimitKb: 65536,
-		author: "",
-		isPremium: false,
-		editorial: "",
-		topicTags: [""],
-		companyTags: [""],
-	});
+	// hook states
+	const { setIsPageLoading } = usePageLoadingSetter();
+	const {
+		generatedProblem,
+		generateProblem,
+		isGeneratingProblem,
+		errorMessage: errorDuringProblemGeneration,
+	} = useGeneratedProblem();
+
+	// useEffect to handle loading and error states for auto prompt generated problem
+	useEffect(() => {
+		setError(errorDuringProblemGeneration);
+		if (generatedProblem) {
+			setFormData(mergeGeneratedProblemWithDefault(generatedProblem));
+		} else {
+			setFormData(problemFormDataDefault);
+		}
+	}, [generatedProblem, errorDuringProblemGeneration]);
+
+	// Page loader useEffect
+	useEffect(() => {
+		setIsPageLoading(isGeneratingProblem || loading);
+	}, [isGeneratingProblem, loading, setIsPageLoading]);
+
+	const [formData, setFormData] = useState<ProblemFormData>(problemFormDataDefault);
 
 	const handleInputChange = (field: keyof ProblemFormData, value: string | number | boolean) => {
 		setFormData((prev) => ({ ...prev, [field]: value }));
@@ -176,10 +220,32 @@ export default function CraftProblem() {
 		}
 	};
 
+	const handleGenerateProblemWithAI = async () => {
+		if (
+			problemGenerationPrompt.length < MIN_PROMPT_LENGTH ||
+			problemGenerationPrompt.length > MAX_PROMPT_LENGTH
+		) {
+			setPromptSubmissionError(
+				`Prompt length should be between ${MIN_PROMPT_LENGTH} and ${MAX_PROMPT_LENGTH} characters`
+			);
+			return;
+		}
+		// loading state due to this handled in useEffect
+		generateProblem(problemGenerationPrompt);
+	};
+
 	return (
 		<div className="container mx-auto px-4 py-8 max-w-4xl">
-			<h1 className="text-3xl font-bold mb-6">Craft a New Problem</h1>
-
+			<div className="flex mb-6 items-center">
+				<h1 className="text-3xl font-bold">Craft a New Problem</h1>
+				<Button
+					variant={"glowingBorder"}
+					className="ml-auto"
+					onClick={() => setShowAIPromptModal(true)}
+				>
+					Craft using AI
+				</Button>
+			</div>
 			{/* Validation Error Modal */}
 			<Dialog open={showErrorModal} onOpenChange={setShowErrorModal}>
 				<DialogContent className="sm:max-w-md">
@@ -200,6 +266,35 @@ export default function CraftProblem() {
 					</div>
 					<div className="flex justify-end mt-4">
 						<Button onClick={() => setShowErrorModal(false)}>Got it</Button>
+					</div>
+				</DialogContent>
+			</Dialog>
+			{/* AI Prompt Modal */}
+			<Dialog open={showAIPromptModal} onOpenChange={setShowAIPromptModal}>
+				<DialogContent className="sm:max-w-md">
+					<DialogHeader>
+						<DialogTitle>Generate Problem with AI</DialogTitle>
+						<DialogDescription>
+							Convert your idea into an actual problem!
+							{promptSubmissionError && (
+								<p className="text-xs text-red-600">{promptSubmissionError}</p>
+							)}
+						</DialogDescription>
+					</DialogHeader>
+					<Textarea
+						required
+						maxLength={MAX_PROMPT_LENGTH}
+						value={problemGenerationPrompt}
+						onChange={(e) => {
+							setProblemGenerationPrompt(e.target.value);
+							setPromptSubmissionError(null);
+						}}
+					/>
+					<div className="flex items-center justify-between mt-4">
+						<p className="text-xs">
+							characters left {MAX_PROMPT_LENGTH - problemGenerationPrompt.length}
+						</p>
+						<Button onClick={handleGenerateProblemWithAI}>Generate Problem</Button>
 					</div>
 				</DialogContent>
 			</Dialog>
@@ -410,18 +505,6 @@ export default function CraftProblem() {
 							min="1"
 						/>
 					</div>
-				</div>
-
-				{/* Author */}
-				<div>
-					<label className="block text-sm font-medium mb-2">Author (optional)</label>
-					<input
-						type="text"
-						value={formData.author}
-						onChange={(e) => handleInputChange("author", e.target.value)}
-						className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-						placeholder="Your name"
-					/>
 				</div>
 
 				{/* Premium */}
