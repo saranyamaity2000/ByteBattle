@@ -14,6 +14,9 @@ importers:
       '@ai-sdk/openai':
         specifier: 3.0.0-beta.54
         version: 3.0.0-beta.54(zod@3.25.76)
+      '@ai-sdk/perplexity':
+        specifier: ^2.0.17
+        version: 2.0.17(zod@3.25.76)
       '@aws-sdk/client-s3':
         specifier: ^3.872.0
         version: 3.925.0
@@ -125,6 +128,12 @@ packages:
 
   '@ai-sdk/openai@3.0.0-beta.54':
     resolution: {integrity: sha512-EjCi1brWfDQOm/FXzijl5oujUUk0Y+wxmJGV5uaNqoVo8uIUUM/YoNpQtaarM68QN4BJPJfr90vXV1rH7NkD6A==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      zod: ^3.25.76 || ^4.1.8
+
+  '@ai-sdk/perplexity@2.0.17':
+    resolution: {integrity: sha512-FvaUVeEeC81xj0t5JVyA3N3KRWlJJo/dGTaODfIT8TGNqOpE+ub2tAYGLSSUaI2v6jsy90lhnmGRaFh4pusgXA==}
     engines: {node: '>=18'}
     peerDependencies:
       zod: ^3.25.76 || ^4.1.8
@@ -2962,6 +2971,12 @@ snapshots:
       - '@valibot/to-json-schema'
       - arktype
       - effect
+
+  '@ai-sdk/perplexity@2.0.17(zod@3.25.76)':
+    dependencies:
+      '@ai-sdk/provider': 2.0.0
+      '@ai-sdk/provider-utils': 3.0.16(zod@3.25.76)
+      zod: 3.25.76
 
   '@ai-sdk/provider-utils@3.0.16(zod@3.25.76)':
     dependencies:
