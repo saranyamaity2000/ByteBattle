@@ -169,6 +169,16 @@ class ProblemService {
 		}
 	}
 
+	async updateProblem(slug: string, payload: Partial<CreateProblemPayload>): Promise<ApiProblem> {
+		try {
+			const response = await apiClient.put<ApiResponse<ApiProblem>>(`/problems/${slug}`, payload);
+			return response.data.data;
+		} catch (error) {
+			console.error("Error updating problem:", error);
+			throw error;
+		}
+	}
+
 	async publishProblem(slug: string): Promise<ApiProblem> {
 		try {
 			const response = await apiClient.patch<ApiResponse<ApiProblem>>(

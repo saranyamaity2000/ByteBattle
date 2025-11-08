@@ -13,6 +13,7 @@ import {
 	AlertCircle,
 	CheckCircle,
 	FileDown,
+	Save,
 } from "lucide-react";
 
 // Template utility for generating testcase template
@@ -97,6 +98,28 @@ const TemplateDownloadButton = () => (
 	</Button>
 );
 
+interface Example {
+	input: string;
+	output: string;
+	explanation?: string;
+}
+
+interface ProblemFormData {
+	title: string;
+	slug: string;
+	statement: string;
+	difficulty: "easy" | "medium" | "hard";
+	examples: Example[];
+	constraints: string[];
+	timeLimitMs: number;
+	memoryLimitKB: number;
+	author: string;
+	isPremium: boolean;
+	editorial: string;
+	topicTags: string[];
+	companyTags: string[];
+}
+
 export default function ModifyProblem() {
 	const { problemSlug } = useParams<{ problemSlug: string }>();
 	const [problem, setProblem] = useState<ApiProblem | null>(null);
@@ -108,6 +131,8 @@ export default function ModifyProblem() {
 	const [successMessage, setSuccessMessage] = useState<string | null>(null);
 	const [downloadMessage, setDownloadMessage] = useState<string | null>(null);
 	const [isValidationError, setIsValidationError] = useState(false);
+	const [savingProblem, setSavingProblem] = useState(false);
+	const [formData, setFormData] = useState<ProblemFormData | null>(null);
 
 	useEffect(() => {
 		const fetchProblem = async () => {
@@ -118,6 +143,22 @@ export default function ModifyProblem() {
 				const data = await problemService.getProblemById(problemSlug);
 				if (data) {
 					setProblem(data);
+					// Initialize form data
+					setFormData({
+						title: data.title,
+						slug: data.slug,
+						statement: data.statement,
+						difficulty: data.difficulty,
+						examples: data.examples,
+						constraints: data.constraints,
+						timeLimitMs: data.timeLimitMs,
+						memoryLimitKB: data.memoryLimitKB,
+						author: data.author,
+						isPremium: data.isPremium,
+						editorial: data.editorial,
+						topicTags: data.topicTags,
+						companyTags: data.companyTags,
+					});
 				} else {
 					setError("Problem not found");
 				}
@@ -131,6 +172,115 @@ export default function ModifyProblem() {
 
 		fetchProblem();
 	}, [problemSlug]);
+
+	const handleInputChange = (field: keyof ProblemFormData, value: string | number | boolean) => {
+		if (!formData) return;
+		setFormData((prev) => (prev ? { ...prev, [field]: value } : null));
+	};
+
+	const handleExampleChange = (index: number, field: keyof Example, value: string) => {
+		if (!formData) return;
+		const newExamples = [...formData.examples];
+		newExamples[index] = { ...newExamples[index], [field]: value };
+		setFormData((prev) => (prev ? { ...prev, examples: newExamples } : null));
+	};
+
+	const addExample = () => {
+		if (!formData) return;
+		setFormData((prev) =>
+			prev
+				? {
+						...prev,
+						examples: [...prev.examples, { input: "", output: "", explanation: "" }],
+				  }
+				: null
+		);
+	};
+
+	const removeExample = (index: number) => {
+		if (!formData || formData.examples.length <= 1) return;
+		setFormData((prev) =>
+			prev
+				? {
+						...prev,
+						examples: prev.examples.filter((_, i) => i !== index),
+				  }
+				: null
+		);
+	};
+
+	const handleArrayChange = (
+		field: "constraints" | "topicTags" | "companyTags",
+		index: number,
+		value: string
+	) => {
+		if (!formData) return;
+		const newArray = [...formData[field]];
+		newArray[index] = value;
+		setFormData((prev) => (prev ? { ...prev, [field]: newArray } : null));
+	};
+
+	const addArrayItem = (field: "constraints" | "topicTags" | "companyTags") => {
+		if (!formData) return;
+		setFormData((prev) =>
+			prev
+				? {
+						...prev,
+						[field]: [...prev[field], ""],
+				  }
+				: null
+		);
+	};
+
+	const removeArrayItem = (field: "constraints" | "topicTags" | "companyTags", index: number) => {
+		if (!formData || formData[field].length <= 1) return;
+		setFormData((prev) =>
+			prev
+				? {
+						...prev,
+						[field]: prev[field].filter((_, i) => i !== index),
+				  }
+				: null
+		);
+	};
+
+	const handleSaveProblem = async () => {
+		if (!problemSlug || !formData) return;
+
+		try {
+			setSavingProblem(true);
+			setError(null);
+
+			// Filter out empty strings from arrays
+			const payload = {
+				title: formData.title,
+				statement: formData.statement,
+				difficulty: formData.difficulty,
+				examples: formData.examples.map((ex) => ({
+					input: ex.input,
+					output: ex.output,
+					...(ex.explanation?.trim() && { explanation: ex.explanation }),
+				})),
+				constraints: formData.constraints.filter((c) => c.trim()),
+				timeLimitMs: formData.timeLimitMs,
+				memoryLimitKB: formData.memoryLimitKB,
+				isPremium: formData.isPremium,
+				topicTags: formData.topicTags.filter((t) => t.trim()),
+				companyTags: formData.companyTags.filter((c) => c.trim()),
+				...(formData.author?.trim() && { author: formData.author }),
+				...(formData.editorial?.trim() && { editorial: formData.editorial }),
+			};
+
+			const updatedProblem = await problemService.updateProblem(problemSlug, payload);
+			setProblem(updatedProblem);
+			setSuccessMessage("Problem details updated successfully!");
+		} catch (err) {
+			const error = err as { response?: { data?: { message?: string } }; message?: string };
+			setError(error.response?.data?.message || error.message || "Failed to update problem");
+		} finally {
+			setSavingProblem(false);
+		}
+	};
 
 	const handleTestcaseUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
 		const file = event.target.files?.[0];
@@ -353,6 +503,369 @@ export default function ModifyProblem() {
 				)}
 
 				{error && <ErrorMessage error={error} isValidationError={isValidationError} />}
+
+				{/* Problem Details Section */}
+				{formData && (
+					<div className="bg-white rounded-lg shadow-md p-6 mb-6">
+						<div className="flex justify-between items-center mb-4">
+							<h2 className="text-xl font-semibold text-gray-900">Problem Details</h2>
+							<Button
+								onClick={handleSaveProblem}
+								disabled={savingProblem}
+								className="cursor-pointer"
+							>
+								<Save className="h-4 w-4 mr-2" />
+								{savingProblem ? "Saving..." : "Save Changes"}
+							</Button>
+						</div>
+
+						<div className="space-y-6">
+							{/* Title - Disabled */}
+							<div>
+								<label className="block text-sm font-medium mb-2">
+									Title <span className="text-red-500">*</span>
+								</label>
+								<input
+									type="text"
+									value={formData.title}
+									disabled
+									className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 cursor-not-allowed"
+								/>
+							</div>
+
+							{/* Slug - Disabled */}
+							<div>
+								<label className="block text-sm font-medium mb-2">Slug</label>
+								<input
+									type="text"
+									value={formData.slug}
+									disabled
+									className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 cursor-not-allowed"
+								/>
+							</div>
+
+							{/* Statement - Editable */}
+							<div>
+								<label className="block text-sm font-medium mb-2">
+									Problem Statement <span className="text-red-500">*</span>
+								</label>
+								<textarea
+									value={formData.statement}
+									onChange={(e) => handleInputChange("statement", e.target.value)}
+									className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-32"
+									placeholder="Describe the problem..."
+								/>
+							</div>
+
+							{/* Difficulty - Editable */}
+							<div>
+								<label className="block text-sm font-medium mb-2">
+									Difficulty <span className="text-red-500">*</span>
+								</label>
+								<select
+									value={formData.difficulty}
+									onChange={(e) =>
+										handleInputChange(
+											"difficulty",
+											e.target.value as "easy" | "medium" | "hard"
+										)
+									}
+									className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+								>
+									<option value="easy">Easy</option>
+									<option value="medium">Medium</option>
+									<option value="hard">Hard</option>
+								</select>
+							</div>
+
+							{/* Examples - Editable */}
+							<div>
+								<label className="block text-sm font-medium mb-2">
+									Examples <span className="text-red-500">*</span>
+								</label>
+								{formData.examples.map((example, index) => (
+									<div
+										key={index}
+										className="border border-gray-300 rounded-md p-4 mb-3 bg-gray-50"
+									>
+										<div className="flex justify-between items-center mb-3">
+											<h4 className="font-medium">Example {index + 1}</h4>
+											{formData.examples.length > 1 && (
+												<Button
+													type="button"
+													variant="destructive"
+													size="sm"
+													onClick={() => removeExample(index)}
+												>
+													Remove
+												</Button>
+											)}
+										</div>
+										<div className="space-y-3">
+											<div>
+												<label className="block text-xs font-medium mb-1">
+													Input
+												</label>
+												<textarea
+													value={example.input}
+													onChange={(e) =>
+														handleExampleChange(
+															index,
+															"input",
+															e.target.value
+														)
+													}
+													className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+													placeholder="e.g., nums = [2,7,11,15], target = 9"
+													rows={2}
+												/>
+											</div>
+											<div>
+												<label className="block text-xs font-medium mb-1">
+													Output
+												</label>
+												<textarea
+													value={example.output}
+													onChange={(e) =>
+														handleExampleChange(
+															index,
+															"output",
+															e.target.value
+														)
+													}
+													className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+													placeholder="e.g., [0,1]"
+													rows={2}
+												/>
+											</div>
+											<div>
+												<label className="block text-xs font-medium mb-1">
+													Explanation (optional)
+												</label>
+												<textarea
+													value={example.explanation || ""}
+													onChange={(e) =>
+														handleExampleChange(
+															index,
+															"explanation",
+															e.target.value
+														)
+													}
+													className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+													placeholder="Explain the example..."
+													rows={2}
+												/>
+											</div>
+										</div>
+									</div>
+								))}
+								<Button
+									type="button"
+									variant="outline"
+									onClick={addExample}
+									className="mt-2"
+								>
+									+ Add Example
+								</Button>
+							</div>
+
+							{/* Constraints - Editable */}
+							<div>
+								<label className="block text-sm font-medium mb-2">
+									Constraints
+								</label>
+								{formData.constraints.map((constraint, index) => (
+									<div key={index} className="flex gap-2 mb-2">
+										<input
+											type="text"
+											value={constraint}
+											onChange={(e) =>
+												handleArrayChange(
+													"constraints",
+													index,
+													e.target.value
+												)
+											}
+											className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+											placeholder="e.g., 2 <= nums.length <= 10^4"
+										/>
+										{formData.constraints.length > 1 && (
+											<Button
+												type="button"
+												variant="destructive"
+												size="sm"
+												onClick={() =>
+													removeArrayItem("constraints", index)
+												}
+											>
+												Remove
+											</Button>
+										)}
+									</div>
+								))}
+								<Button
+									type="button"
+									variant="outline"
+									onClick={() => addArrayItem("constraints")}
+									className="mt-2"
+								>
+									+ Add Constraint
+								</Button>
+							</div>
+
+							{/* Time and Memory Limits - Editable */}
+							<div className="grid grid-cols-2 gap-4">
+								<div>
+									<label className="block text-sm font-medium mb-2">
+										Time Limit (ms)
+									</label>
+									<input
+										type="number"
+										value={formData.timeLimitMs}
+										onChange={(e) =>
+											handleInputChange(
+												"timeLimitMs",
+												parseInt(e.target.value) || 1000
+											)
+										}
+										className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+										min="1"
+									/>
+								</div>
+								<div>
+									<label className="block text-sm font-medium mb-2">
+										Memory Limit (KB)
+									</label>
+									<input
+										type="number"
+										value={formData.memoryLimitKB}
+										onChange={(e) =>
+											handleInputChange(
+												"memoryLimitKB",
+												parseInt(e.target.value) || 65536
+											)
+										}
+										className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+										min="1"
+									/>
+								</div>
+							</div>
+
+							{/* Premium - Editable */}
+							<div className="flex items-center gap-2">
+								<input
+									type="checkbox"
+									id="isPremium"
+									checked={formData.isPremium}
+									onChange={(e) =>
+										handleInputChange("isPremium", e.target.checked)
+									}
+									className="w-4 h-4"
+								/>
+								<label htmlFor="isPremium" className="text-sm font-medium">
+									Premium Problem
+								</label>
+							</div>
+
+							{/* Editorial - Editable */}
+							<div>
+								<label className="block text-sm font-medium mb-2">
+									Editorial (optional)
+								</label>
+								<textarea
+									value={formData.editorial}
+									onChange={(e) => handleInputChange("editorial", e.target.value)}
+									className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-24"
+									placeholder="Provide hints or solutions..."
+								/>
+							</div>
+
+							{/* Topic Tags - Editable */}
+							<div>
+								<label className="block text-sm font-medium mb-2">Topic Tags</label>
+								{formData.topicTags.map((tag, index) => (
+									<div key={index} className="flex gap-2 mb-2">
+										<input
+											type="text"
+											value={tag}
+											onChange={(e) =>
+												handleArrayChange(
+													"topicTags",
+													index,
+													e.target.value
+												)
+											}
+											className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+											placeholder="e.g., Array, Hash Table"
+										/>
+										{formData.topicTags.length > 1 && (
+											<Button
+												type="button"
+												variant="destructive"
+												size="sm"
+												onClick={() => removeArrayItem("topicTags", index)}
+											>
+												Remove
+											</Button>
+										)}
+									</div>
+								))}
+								<Button
+									type="button"
+									variant="outline"
+									onClick={() => addArrayItem("topicTags")}
+									className="mt-2"
+								>
+									+ Add Topic Tag
+								</Button>
+							</div>
+
+							{/* Company Tags - Editable */}
+							<div>
+								<label className="block text-sm font-medium mb-2">
+									Company Tags
+								</label>
+								{formData.companyTags.map((tag, index) => (
+									<div key={index} className="flex gap-2 mb-2">
+										<input
+											type="text"
+											value={tag}
+											onChange={(e) =>
+												handleArrayChange(
+													"companyTags",
+													index,
+													e.target.value
+												)
+											}
+											className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+											placeholder="e.g., Amazon, Google"
+										/>
+										{formData.companyTags.length > 1 && (
+											<Button
+												type="button"
+												variant="destructive"
+												size="sm"
+												onClick={() =>
+													removeArrayItem("companyTags", index)
+												}
+											>
+												Remove
+											</Button>
+										)}
+									</div>
+								))}
+								<Button
+									type="button"
+									variant="outline"
+									onClick={() => addArrayItem("companyTags")}
+									className="mt-2"
+								>
+									+ Add Company Tag
+								</Button>
+							</div>
+						</div>
+					</div>
+				)}
 
 				{/* Testcase Management Section */}
 				<div className="bg-white rounded-lg shadow-md p-6 mb-6">

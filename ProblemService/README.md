@@ -4,30 +4,30 @@ RESTful API service for managing coding problems, test cases, and problem metada
 
 ## Features
 
-- 📝 CRUD operations for coding problems
-- 📦 Test case file upload/download via AWS S3
-- 🔍 Problem search and filtering
-- 🏷️ Support for tags, categories, and difficulty levels
-- 📊 Problem statistics tracking
-- ✅ Comprehensive test coverage with Jest
+-   📝 CRUD operations for coding problems
+-   📦 Test case file upload/download via AWS S3
+-   🔍 Problem search and filtering
+-   🏷️ Support for tags, categories, and difficulty levels
+-   📊 Problem statistics tracking
+-   ✅ Comprehensive test coverage with Jest
 
 ## Tech Stack
 
-- **Runtime**: Node.js 22.x+
-- **Framework**: Express 5
-- **Language**: TypeScript
-- **Database**: MongoDB (Mongoose ODM)
-- **Storage**: AWS S3
-- **Testing**: Jest + Supertest
-- **Logging**: Winston
-- **Validation**: Zod
+-   **Runtime**: Node.js 22.x+
+-   **Framework**: Express 5
+-   **Language**: TypeScript
+-   **Database**: MongoDB (Mongoose ODM)
+-   **Storage**: AWS S3
+-   **Testing**: Jest + Supertest
+-   **Logging**: Winston
+-   **Validation**: Zod
 
 ## Prerequisites
 
-- Node.js 22.0.0 or higher
-- MongoDB 4.4 or higher
-- AWS Account (for S3 bucket)
-- npm or yarn package manager
+-   Node.js 22.0.0 or higher
+-   MongoDB 4.4 or higher
+-   AWS Account (for S3 bucket)
+-   npm or yarn package manager
 
 ## Local Setup
 
@@ -64,6 +64,7 @@ ALLOWED_ORIGINS=http://localhost:5173,http://localhost:3000
 ### 3. Start MongoDB
 
 #### Option A: Local MongoDB
+
 ```bash
 # Install MongoDB (if not already installed)
 # macOS
@@ -74,21 +75,25 @@ mongod --dbpath /path/to/data/directory
 ```
 
 #### Option B: MongoDB Docker
+
 ```bash
 docker run -d -p 27017:27017 --name mongodb mongo:latest
 ```
 
 #### Option C: MongoDB Atlas
+
 Use the connection string from MongoDB Atlas in your `.env` file.
 
 ### 4. Start the Server
 
 #### Development Mode (with hot reload)
+
 ```bash
 npm run dev
 ```
 
 #### Production Mode
+
 ```bash
 npm run start
 ```
@@ -97,29 +102,34 @@ The service will be available at: **http://localhost:3001**
 
 ## Available Scripts
 
-- `npm run dev` - Start development server with nodemon (auto-reload)
-- `npm run start` - Build and start production server
-- `npm test` - Run test suite with Jest
-- `npm run test:watch` - Run tests in watch mode
-- `npm run test:coverage` - Generate test coverage report
+-   `npm run dev` - Start development server with nodemon (auto-reload)
+-   `npm run start` - Build and start production server
+-   `npm test` - Run test suite with Jest
+-   `npm run test:watch` - Run tests in watch mode
+-   `npm run test:coverage` - Generate test coverage report
 
 ## API Endpoints
 
 ### Problem Management
 
 #### Get All Problems
+
 ```http
 GET /api/v1/problems
 ```
+
 Returns list of all published problems.
 
 #### Get Problem by Slug
+
 ```http
 GET /api/v1/problems/:slug
 ```
+
 Returns detailed problem information including examples and constraints.
 
 #### Create Problem
+
 ```http
 POST /api/v1/problems
 Content-Type: application/json
@@ -137,11 +147,12 @@ Content-Type: application/json
   ],
   "constraints": ["1 <= nums.length <= 10^4"],
   "timeLimitMs": 2000,
-  "memoryLimitKb": 256000
+  "memoryLimitKB": 256000
 }
 ```
 
 #### Update Problem
+
 ```http
 PUT /api/v1/problems/:slug
 Content-Type: application/json
@@ -153,11 +164,13 @@ Content-Type: application/json
 ```
 
 #### Delete Problem
+
 ```http
 DELETE /api/v1/problems/:slug
 ```
 
 #### Publish Problem
+
 ```http
 POST /api/v1/problems/:slug/publish
 ```
@@ -165,18 +178,22 @@ POST /api/v1/problems/:slug/publish
 ### Test Case Management
 
 #### Upload Test Cases
+
 ```http
 POST /api/v1/problems/:slug/testcases
 Content-Type: multipart/form-data
 
 testcase: [file]
 ```
+
 Upload a test case file (ZIP or JSON) to S3.
 
 #### Download Test Cases
+
 ```http
 GET /api/v1/problems/:slug/testcases
 ```
+
 Download the test case file from S3.
 
 ## Project Structure
@@ -228,7 +245,7 @@ ProblemService/
   }];
   constraints: string[];      // Problem constraints
   timeLimitMs: number;        // Execution time limit (default: 2000)
-  memoryLimitKb: number;      // Memory limit (default: 256000)
+  memoryLimitKB: number;      // Memory limit (default: 256000)
   author: string;             // Problem author
   isPublished: boolean;       // Visibility status
   isPremium: boolean;         // Premium problem flag
@@ -248,19 +265,22 @@ ProblemService/
 The service includes comprehensive test coverage:
 
 ### Run All Tests
+
 ```bash
 npm test
 ```
 
 ### Run Tests with Coverage
+
 ```bash
 npm run test:coverage
 ```
 
 ### Test Suites
-- **Integration Tests**: Full API endpoint testing
-- **Edge Case Tests**: Boundary conditions and error scenarios
-- **MongoDB Integration**: In-memory MongoDB server for isolated testing
+
+-   **Integration Tests**: Full API endpoint testing
+-   **Edge Case Tests**: Boundary conditions and error scenarios
+-   **MongoDB Integration**: In-memory MongoDB server for isolated testing
 
 See [TEST_README.md](./TEST_README.md) for detailed testing documentation.
 
@@ -276,18 +296,20 @@ See [TEST_README.md](./TEST_README.md) for detailed testing documentation.
 ### Test Case File Format
 
 Test cases should be uploaded as:
-- **JSON**: Structured test case data
-- **ZIP**: Compressed test case files
+
+-   **JSON**: Structured test case data
+-   **ZIP**: Compressed test case files
 
 Example JSON format:
+
 ```json
 {
-  "testcases": [
-    {
-      "input": "5\n",
-      "output": "120\n"
-    }
-  ]
+	"testcases": [
+		{
+			"input": "5\n",
+			"output": "120\n"
+		}
+	]
 }
 ```
 
@@ -297,18 +319,19 @@ The service uses consistent error responses:
 
 ```json
 {
-  "success": false,
-  "message": "Error description",
-  "error": "Detailed error information"
+	"success": false,
+	"message": "Error description",
+	"error": "Detailed error information"
 }
 ```
 
 HTTP Status Codes:
-- `200` - Success
-- `201` - Created
-- `400` - Bad Request
-- `404` - Not Found
-- `500` - Internal Server Error
+
+-   `200` - Success
+-   `201` - Created
+-   `400` - Bad Request
+-   `404` - Not Found
+-   `500` - Internal Server Error
 
 ## Logging
 
@@ -320,9 +343,10 @@ logger.error("Database error", { error: err });
 ```
 
 Logs are written to:
-- Console (development)
-- `logs/error.log` (errors only)
-- `logs/combined.log` (all logs)
+
+-   Console (development)
+-   `logs/error.log` (errors only)
+-   `logs/combined.log` (all logs)
 
 ## Development Tips
 
@@ -345,13 +369,15 @@ const problems = await Problem.find({ difficulty: "easy" });
 ### Markdown Support
 
 Problem statements and editorials support Markdown:
-- Use `marked` library for rendering
-- Sanitize HTML with `sanitize-html`
-- Convert HTML back to Markdown with `turndown`
+
+-   Use `marked` library for rendering
+-   Sanitize HTML with `sanitize-html`
+-   Convert HTML back to Markdown with `turndown`
 
 ## Troubleshooting
 
 ### MongoDB Connection Issues
+
 ```bash
 # Check if MongoDB is running
 mongosh
@@ -361,6 +387,7 @@ echo $MONGO_URI
 ```
 
 ### Port Already in Use
+
 ```bash
 # Find process using port 3001
 lsof -ti:3001 | xargs kill -9
@@ -369,11 +396,13 @@ lsof -ti:3001 | xargs kill -9
 ```
 
 ### AWS S3 Errors
-- Verify AWS credentials are correct
-- Check bucket permissions and CORS configuration
-- Ensure bucket region matches `AWS_REGION`
+
+-   Verify AWS credentials are correct
+-   Check bucket permissions and CORS configuration
+-   Ensure bucket region matches `AWS_REGION`
 
 ### Test Failures
+
 ```bash
 # Clear Jest cache
 npm test -- --clearCache
@@ -384,18 +413,18 @@ npm test -- problem.controller.test.ts
 
 ## Performance Considerations
 
-- Use MongoDB indexes for frequently queried fields (slug, difficulty)
-- Implement pagination for problem lists
-- Cache frequently accessed problems (Redis)
-- Use S3 signed URLs for secure test case access
+-   Use MongoDB indexes for frequently queried fields (slug, difficulty)
+-   Implement pagination for problem lists
+-   Cache frequently accessed problems (Redis)
+-   Use S3 signed URLs for secure test case access
 
 ## Security Best Practices
 
-- Validate all input with Zod schemas
-- Sanitize Markdown content
-- Use environment variables for secrets
-- Implement rate limiting (future)
-- Add authentication/authorization (future)
+-   Validate all input with Zod schemas
+-   Sanitize Markdown content
+-   Use environment variables for secrets
+-   Implement rate limiting (future)
+-   Add authentication/authorization (future)
 
 ## Contributing
 
