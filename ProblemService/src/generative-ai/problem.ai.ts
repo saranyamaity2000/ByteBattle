@@ -22,7 +22,7 @@ export async function generateProblemByAI(
 ): Promise<ProblemGenerationResponseDto> {
 	logger.info("calling AI to generate problem");
 	const { object: generatedProblemResponse } = await generateObject({
-		maxOutputTokens: 1000, // max token 1000 for now for everyone
+		maxOutputTokens: 2000, // max token 1000 for now for everyone
 		maxRetries: 2,
 		model: aiModels.googleFlash,
 		prompt: problemGenerationPrompt,
