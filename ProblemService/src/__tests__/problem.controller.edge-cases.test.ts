@@ -163,11 +163,11 @@ describe("Problem Controller Edge Cases", () => {
 					examples: [],
 					testcaseUrl:
 						"https://s3.amazonaws.com/test-bucket/max-memory-limit-testcases.txt",
-					memoryLimitKb: 1048576, // 1GB in KB
+					memoryLimitKB: 1048576, // 1GB in KB
 				})
 				.expect(201);
 
-			expect(response.body.data.memoryLimitKb).toBe(1048576);
+			expect(response.body.data.memoryLimitKB).toBe(1048576);
 		});
 
 		it("should handle negative values gracefully", async () => {
@@ -182,7 +182,7 @@ describe("Problem Controller Edge Cases", () => {
 					testcaseUrl:
 						"https://s3.amazonaws.com/test-bucket/negative-values-testcases.txt",
 					timeLimitMs: -100, // negative time
-					memoryLimitKb: -1000, // negative memory
+					memoryLimitKB: -1000, // negative memory
 				})
 				.expect(400);
 		});

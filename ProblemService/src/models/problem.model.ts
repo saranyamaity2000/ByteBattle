@@ -24,7 +24,7 @@ export interface IProblem extends Document {
 	examples: IProblemExample[];
 	constraints?: string[]; // i.e. ["1 <= n <= 100", "1 <= m <= 100"]
 	timeLimitMs?: number;
-	memoryLimitKb?: number;
+	memoryLimitKB?: number;
 	author?: string; // for now string
 	testcaseUrl?: string;
 
@@ -60,7 +60,7 @@ const ProblemSchema = new Schema<IProblem>(
 		examples: { type: [ProblemExampleSchema], default: [] },
 		constraints: { type: [String], default: [] },
 		timeLimitMs: { type: Number, default: 1000 },
-		memoryLimitKb: { type: Number, default: 65536 },
+		memoryLimitKB: { type: Number, default: 65536 },
 		author: { type: String },
 		testcaseUrl: { type: String, required: false },
 		isPublished: { type: Boolean, default: false, index: true },

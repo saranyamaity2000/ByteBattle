@@ -19,7 +19,7 @@ describe("Problem Controller Integration Tests", () => {
 		testcaseUrl: "https://s3.amazonaws.com/test-bucket/two-sum-testcases.txt",
 		constraints: ["2 <= nums.length <= 10^4", "-10^9 <= nums[i] <= 10^9"],
 		timeLimitMs: 1000,
-		memoryLimitKb: 65536,
+		memoryLimitKB: 65536,
 		author: "test-author",
 		isPublished: false,
 		isPremium: false,
@@ -376,7 +376,7 @@ describe("Problem Controller Integration Tests", () => {
 			expect(response.body.data.submissionsCount).toBe(0);
 			expect(response.body.data.likes).toBe(0);
 			expect(response.body.data.timeLimitMs).toBe(1000);
-			expect(response.body.data.memoryLimitKb).toBe(65536);
+			expect(response.body.data.memoryLimitKB).toBe(65536);
 			expect(Array.isArray(response.body.data.constraints)).toBe(true);
 			expect(Array.isArray(response.body.data.topicTags)).toBe(true);
 			expect(Array.isArray(response.body.data.companyTags)).toBe(true);

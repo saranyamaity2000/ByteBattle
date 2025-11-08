@@ -27,7 +27,7 @@ interface ProblemFormData {
 	examples: Example[];
 	constraints: string[];
 	timeLimitMs: number;
-	memoryLimitKb: number;
+	memoryLimitKB: number;
 	author: string;
 	isPremium: boolean;
 	editorial: string;
@@ -43,7 +43,7 @@ const problemFormDataDefault: ProblemFormData = {
 	examples: [{ input: "", output: "", explanation: "" }],
 	constraints: [""],
 	timeLimitMs: 1000,
-	memoryLimitKb: 65536,
+	memoryLimitKB: 65536,
 	author: "",
 	isPremium: false,
 	editorial: "",
@@ -494,10 +494,10 @@ export default function CraftProblem() {
 						<label className="block text-sm font-medium mb-2">Memory Limit (KB)</label>
 						<input
 							type="number"
-							value={formData.memoryLimitKb}
+							value={formData.memoryLimitKB}
 							onChange={(e) =>
 								handleInputChange(
-									"memoryLimitKb",
+									"memoryLimitKB",
 									parseInt(e.target.value) || 65536
 								)
 							}

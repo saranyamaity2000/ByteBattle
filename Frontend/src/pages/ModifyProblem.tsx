@@ -112,7 +112,7 @@ interface ProblemFormData {
 	examples: Example[];
 	constraints: string[];
 	timeLimitMs: number;
-	memoryLimitKb: number;
+	memoryLimitKB: number;
 	author: string;
 	isPremium: boolean;
 	editorial: string;
@@ -152,7 +152,7 @@ export default function ModifyProblem() {
 						examples: data.examples,
 						constraints: data.constraints,
 						timeLimitMs: data.timeLimitMs,
-						memoryLimitKb: data.memoryLimitKB,
+						memoryLimitKB: data.memoryLimitKB,
 						author: data.author,
 						isPremium: data.isPremium,
 						editorial: data.editorial,
@@ -263,7 +263,7 @@ export default function ModifyProblem() {
 				})),
 				constraints: formData.constraints.filter((c) => c.trim()),
 				timeLimitMs: formData.timeLimitMs,
-				memoryLimitKB: formData.memoryLimitKb,
+				memoryLimitKB: formData.memoryLimitKB,
 				isPremium: formData.isPremium,
 				topicTags: formData.topicTags.filter((t) => t.trim()),
 				companyTags: formData.companyTags.filter((c) => c.trim()),
@@ -738,10 +738,10 @@ export default function ModifyProblem() {
 									</label>
 									<input
 										type="number"
-										value={formData.memoryLimitKb}
+										value={formData.memoryLimitKB}
 										onChange={(e) =>
 											handleInputChange(
-												"memoryLimitKb",
+												"memoryLimitKB",
 												parseInt(e.target.value) || 65536
 											)
 										}
