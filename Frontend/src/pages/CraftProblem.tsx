@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { useGeneratedProblem } from "@/hooks/useGeneratedProblem";
 import { Textarea } from "@/components/ui/textarea";
-import { usePageLoadingSetter } from "@/hooks/context-hooks/usePageLoadingSetter";
+import { usePageLoaderContext } from "@/hooks/context-hooks/usePageLoaderContext";
 
 interface Example {
 	input: string;
@@ -73,7 +73,7 @@ export default function CraftProblem() {
 	const [promptSubmissionError, setPromptSubmissionError] = useState<string | null>(null);
 
 	// hook states
-	const { setIsPageLoading } = usePageLoadingSetter();
+	const { setIsPageLoading } = usePageLoaderContext();
 	const {
 		generatedProblem,
 		generateProblem,

@@ -1,6 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "./ui/button";
-import { useAuthContext } from "../hooks/context-hooks/useAuth";
+import { useAuthContext } from "../hooks/context-hooks/useAuthContext";
 import { LogOut, User } from "lucide-react";
 
 export default function Navbar() {

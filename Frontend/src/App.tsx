@@ -1,7 +1,7 @@
 import "./App.css";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./providers/AuthProvider";
-import { useAuthContext } from "./hooks/context-hooks/useAuth";
+import { useAuthContext } from "./hooks/context-hooks/useAuthContext";
 import Navbar from "./components/Navbar";
 import { useEffect } from "react";
 import Home from "./pages/Home";
@@ -10,11 +10,11 @@ import Problem from "./pages/Problem";
 import CraftProblem from "./pages/CraftProblem";
 import ModifyProblem from "./pages/ModifyProblem";
 import { PageLoaderProvider } from "./providers/PageLoaderProvider";
-import { usePageLoadingSetter } from "./hooks/context-hooks/usePageLoadingSetter";
+import { usePageLoaderContext } from "./hooks/context-hooks/usePageLoaderContext";
 
 function AppContent() {
 	const { loading } = useAuthContext();
-	const { setIsPageLoading } = usePageLoadingSetter();
+	const { setIsPageLoading } = usePageLoaderContext();
 
 	useEffect(() => {
 		setIsPageLoading(loading);
