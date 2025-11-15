@@ -11,6 +11,9 @@ import CraftProblem from "./pages/CraftProblem";
 import ModifyProblem from "./pages/ModifyProblem";
 import { PageLoaderProvider } from "./providers/PageLoaderProvider";
 import { usePageLoaderContext } from "./hooks/context-hooks/usePageLoaderContext";
+import { FocusModeProvider } from "./providers/FocusModeProvider";
+import { BattleSocketProvider } from "./providers/BattleSocketProvider";
+import { BattlePage } from "./pages/BattlePage";
 
 function AppContent() {
 	const { loading } = useAuthContext();
@@ -29,6 +32,7 @@ function AppContent() {
 					<Route path="/problem/:problemId" element={<Problem />} />
 					<Route path="/craft-problem" element={<CraftProblem />} />
 					<Route path="/problem/modify/:problemSlug" element={<ModifyProblem />} />
+					<Route path="/battle" element={<BattlePage />} />
 				</Routes>
 			</div>
 		</Router>
@@ -38,9 +42,14 @@ function AppContent() {
 function App() {
 	return (
 		<PageLoaderProvider>
-			<AuthProvider>
-				<AppContent />
-			</AuthProvider>
+			<FocusModeProvider>
+				<AuthProvider>
+					{/* Battle Socket Provier depends on Auth and FocusMode */}
+					<BattleSocketProvider>
+						<AppContent />
+					</BattleSocketProvider>
+				</AuthProvider>
+			</FocusModeProvider>
 		</PageLoaderProvider>
 	);
 }

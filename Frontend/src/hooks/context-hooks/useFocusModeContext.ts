@@ -1,4 +1,4 @@
-import { FocusModeContext, type FocusModeContextType } from "@/providers/FocusModeProvider";
+import { FocusModeContext, type FocusModeContextType } from "@/contexts/FocusModeContext";
 import { useContext } from "react";
 
 export const useFocusModeContext = (): FocusModeContextType => {
