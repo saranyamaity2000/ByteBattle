@@ -1,11 +1,14 @@
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "./ui/button";
-import { useAuthContext } from "../hooks/context-hooks/useAuth";
-import { LogOut, User } from "lucide-react";
+import { useAuthContext } from "../hooks/context-hooks/useAuthContext";
+import { LogOut, User, BellIcon, BellOffIcon } from "lucide-react";
+import { useFocusModeContext } from "../hooks/context-hooks/useFocusModeContext";
+import { Separator } from "./ui/separator";
 
 export default function Navbar() {
 	const location = useLocation();
 	const { user, loading, signInWithGoogle, signOut } = useAuthContext();
+	const { isFocusMode, toggleFocusMode } = useFocusModeContext();
 
 	return (
 		<nav className="w-full border-b border-gray-200 bg-white/80 backdrop-blur-md sticky top-0 z-40">
@@ -36,12 +39,14 @@ export default function Navbar() {
 									Problems
 								</Button>
 							</Link>
-							<Button variant="ghost" className="text-gray-600 hover:text-gray-900">
-								Leaderboard
-							</Button>
-							<Button variant="ghost" className="text-gray-600 hover:text-gray-900">
-								About
-							</Button>
+							<Link to="/battle">
+								<Button
+									variant="ghost"
+									className="text-gray-600 hover:text-gray-900"
+								>
+									Battle
+								</Button>
+							</Link>
 							<Link to="/craft-problem">
 								<Button
 									variant="ghost"
@@ -55,6 +60,13 @@ export default function Navbar() {
 
 					{/* Right side buttons */}
 					<div className="flex items-center space-x-4">
+						<Button variant="outline" onClick={toggleFocusMode}>
+							{isFocusMode ? <BellOffIcon size={20} /> : <BellIcon size={20} />}
+						</Button>
+						<Separator
+							orientation="vertical"
+							className="data-[orientation=vertical]:h-6"
+						/>
 						{loading ? (
 							<Button variant="outline" disabled>
 								Loading...
