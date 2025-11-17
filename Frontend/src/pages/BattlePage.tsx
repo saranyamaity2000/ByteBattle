@@ -1,14 +1,18 @@
 import { Button } from "@/components/ui/button";
 import { useBattleSocketContext } from "@/hooks/context-hooks/useBattleSocketContext";
+import { usePageLoaderContext } from "@/hooks/context-hooks/usePageLoaderContext";
 import { useState } from "react";
 
 export const BattlePage: React.FC = () => {
 	const [opponentEmail, setOpponentEmail] = useState("");
 
 	const { battleSocket, isSocketConnected } = useBattleSocketContext();
+	const { setIsPageLoading } = usePageLoaderContext();
 
 	const handleChallange = () => {
 		battleSocket?.emit("challenge", { chanllangeToEmail: opponentEmail });
+		// Show loading state until we receive match_start or challenge-rejected
+		setIsPageLoading(true);
 	};
 	return (
 		<div>
