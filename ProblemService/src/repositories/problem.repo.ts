@@ -11,6 +11,10 @@ export class ProblemRepository {
 		return ProblemModel.findOne({ slug }).exec();
 	}
 
+	async getProblemById(id: string): Promise<IProblem | null> {
+		return ProblemModel.findById(id).exec();
+	}
+
 	async updateProblem(slug: string, data: Partial<IProblem>): Promise<IProblem | null> {
 		return ProblemModel.findOneAndUpdate({ slug }, data, { new: true }).exec();
 	}
@@ -21,5 +25,17 @@ export class ProblemRepository {
 
 	async getAllProblems(): Promise<IProblem[]> {
 		return ProblemModel.find().exec();
+	}
+
+	async getPublishedProblemsCount(): Promise<number> {
+		return await ProblemModel.countDocuments({ isPublished: true }).exec();
+	}
+
+	async getPublishedProblemIdByOffset(offset: number): Promise<string | null> {
+		const problem = await ProblemModel.findOne({ isPublished: true })
+			.skip(offset)
+			.select("_id")
+			.exec();
+		return problem ? problem.id.toString() : null;
 	}
 }
