@@ -328,7 +328,7 @@ describe("Problem Controller Integration Tests", () => {
 		});
 	});
 
-	describe("GET /api/v1/problems/random-problem-id", () => {
+	describe("GET /api/v1/problems/id/random", () => {
 		let resp: request.Response;
 		beforeEach(async () => {
 			// Create a test problem
@@ -339,9 +339,7 @@ describe("Problem Controller Integration Tests", () => {
 			await request(app)
 				.patch(`/api/v1/problems/${mockProblemData.slug}/publish`)
 				.expect(200);
-			const response = await request(app)
-				.get("/api/v1/problems/random-problem-id")
-				.expect(200);
+			const response = await request(app).get("/api/v1/problems/id/random").expect(200);
 			expect(response.body.data).toBeDefined();
 			expect(response.body.data.problemId).toBe(resp.body.data._id);
 		});

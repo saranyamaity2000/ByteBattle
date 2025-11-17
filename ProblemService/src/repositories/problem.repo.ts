@@ -15,6 +15,11 @@ export class ProblemRepository {
 		return ProblemModel.findById(id).exec();
 	}
 
+	async getProblemSlugbyId(id: string): Promise<string | null> {
+		const problem = await ProblemModel.findById(id).select("slug").exec();
+		return problem ? problem.slug : null;
+	}
+
 	async updateProblem(slug: string, data: Partial<IProblem>): Promise<IProblem | null> {
 		return ProblemModel.findOneAndUpdate({ slug }, data, { new: true }).exec();
 	}
