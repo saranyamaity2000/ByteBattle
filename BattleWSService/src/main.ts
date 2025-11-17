@@ -6,8 +6,9 @@ import {
 	handleDisconnect,
 	handleChallenge,
 	handleChallengeReply,
-} from "./handlers/socketHandlers.js";
+} from "./handlers/socket.handler.js";
 import { redisService } from "./services/redis-service.js";
+import mongoose from "mongoose";
 
 declare module "socket.io" {
 	interface Socket {
@@ -55,6 +56,15 @@ io.on("connection", (socket) => {
 	handleChallengeReply(socket, io);
 });
 
-httpServer.listen(serverConfig.PORT, () => {
-	console.log(`SocketIO server running on ws://localhost:${serverConfig.PORT}`);
-});
+(async () => {
+	try {
+		await mongoose.connect(serverConfig.MONGO_URI);
+		console.log("MongoDB connected successfully");
+	} catch (err) {
+		console.error("MongoDB connection error:", err);
+		process.exit(1);
+	}
+	httpServer.listen(serverConfig.PORT, () => {
+		console.log(`SocketIO server running on ws://localhost:${serverConfig.PORT}`);
+	});
+})();
