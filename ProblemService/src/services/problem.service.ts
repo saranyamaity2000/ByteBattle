@@ -18,9 +18,9 @@ export class ProblemService {
 		return this.problemRepository.getProblemBySlug(slug);
 	}
 
-    async getProblemById(id: string): Promise<IProblem | null> {
-        return this.problemRepository.getProblemById(id);
-    }
+	async getProblemById(id: string): Promise<IProblem | null> {
+		return this.problemRepository.getProblemById(id);
+	}
 
 	async updateProblem(slug: string, data: Partial<IProblem>): Promise<IProblem | null> {
 		if (data.statement) {
@@ -75,5 +75,13 @@ export class ProblemService {
 			throw new NotFoundError("No published problems available");
 		}
 		return problemId;
+	}
+
+	async getSlugByProblemId(id: string): Promise<string> {
+		const slug = await this.problemRepository.getProblemSlugbyId(id);
+		if (!slug) {
+			throw new NotFoundError("Problem not found");
+		}
+		return slug;
 	}
 }

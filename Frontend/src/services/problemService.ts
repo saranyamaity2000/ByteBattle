@@ -146,6 +146,21 @@ class ProblemService {
 		}
 	}
 
+	async getProblemSlugById(id: string): Promise<string> {
+		try {
+			const response = await apiClient.get<ApiResponse<{ slug: string }>>(
+				`/problems/slug/${id}`
+			);
+			return response.data.data.slug;
+		} catch (error) {
+			if (axios.isAxiosError(error) && error.response?.status === 404) {
+				throw new Error("Problem not found");
+			}
+			console.error("Error fetching problem slug by ID:", error);
+			throw new Error(`Failed to fetch problem slug with ID: ${id}`);
+		}
+	}
+
 	async getProblemById(id: string): Promise<ApiProblem | null> {
 		try {
 			const response = await apiClient.get<ApiResponse<ApiProblem>>(`/problems/${id}`);
@@ -171,7 +186,10 @@ class ProblemService {
 
 	async updateProblem(slug: string, payload: Partial<CreateProblemPayload>): Promise<ApiProblem> {
 		try {
-			const response = await apiClient.put<ApiResponse<ApiProblem>>(`/problems/${slug}`, payload);
+			const response = await apiClient.put<ApiResponse<ApiProblem>>(
+				`/problems/${slug}`,
+				payload
+			);
 			return response.data.data;
 		} catch (error) {
 			console.error("Error updating problem:", error);

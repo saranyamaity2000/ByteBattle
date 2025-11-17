@@ -109,6 +109,16 @@ class ProblemController {
 		logger.info(`Fetched random published problem ID: ${problemId}`);
 		res.status(200).json({ data: { problemId } });
 	};
+
+    public getSlugByProblemId = async (
+        req: Request,
+        res: Response,
+        next: NextFunction
+    ): Promise<void> => {
+        const { id } = req.params;
+        const slug = await this.problemService.getSlugByProblemId(id);
+        res.status(200).json({ data: { slug } });
+    };
 }
 
 const problemRepository = new ProblemRepository();
