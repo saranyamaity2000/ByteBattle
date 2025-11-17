@@ -22,8 +22,10 @@
 	"dependencies": {
 		"@supabase/supabase-js": "^2.81.1",
 		"@types/uuid": "^11.0.0",
+		"axios": "^1.13.2",
 		"dotenv": "^17.2.3",
 		"ioredis": "^5.8.2",
+		"mongoose": "^8.19.4",
 		"socket.io": "^4.8.1",
 		"uuid": "^13.0.0"
 	}
