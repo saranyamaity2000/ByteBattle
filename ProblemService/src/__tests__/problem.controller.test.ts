@@ -311,6 +311,42 @@ describe("Problem Controller Integration Tests", () => {
 		});
 	});
 
+	describe("GET /api/v1/problems/by-id/:id", () => {
+		let resp: request.Response;
+		beforeEach(async () => {
+			// Create a test problem
+			resp = await request(app).post("/api/v1/problems").send(mockProblemData);
+		});
+		it("should get a problem by ID", async () => {
+			const problemId = resp.body.data._id;
+			const response = await request(app)
+				.get(`/api/v1/problems/by-id/${problemId}`)
+				.expect(200);
+
+			expect(response.body.data).toBeDefined();
+			expect(response.body.data._id).toBe(problemId);
+		});
+	});
+
+	describe("GET /api/v1/problems/random-problem-id", () => {
+		let resp: request.Response;
+		beforeEach(async () => {
+			// Create a test problem
+			resp = await request(app).post("/api/v1/problems").send(mockProblemData);
+		});
+		it("should get a random published problem ID", async () => {
+			// First publish the problem
+			await request(app)
+				.patch(`/api/v1/problems/${mockProblemData.slug}/publish`)
+				.expect(200);
+			const response = await request(app)
+				.get("/api/v1/problems/random-problem-id")
+				.expect(200);
+			expect(response.body.data).toBeDefined();
+			expect(response.body.data.problemId).toBe(resp.body.data._id);
+		});
+	});
+
 	describe("Error Handling", () => {
 		it("should handle database connection errors gracefully", async () => {
 			// This test would need to mock mongoose connection failure

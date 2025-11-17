@@ -12,7 +12,9 @@ export const problemRouter = express.Router();
 
 // Public routes (no auth required, but user info attached if available)
 problemRouter.get("/", optionalSupabaseAuth, problemController.getProblems);
+problemRouter.get("/random-problem-id", problemController.getRandomProblemId);
 // currently public but later for premium problem set only for authenticated users
+problemRouter.get("/by-id/:id", optionalSupabaseAuth, problemController.getProblemById);
 problemRouter.get("/:slug", optionalSupabaseAuth, problemController.getProblemBySlug);
 
 // Protected routes (require authentication)

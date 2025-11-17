@@ -18,6 +18,10 @@ export class ProblemService {
 		return this.problemRepository.getProblemBySlug(slug);
 	}
 
+    async getProblemById(id: string): Promise<IProblem | null> {
+        return this.problemRepository.getProblemById(id);
+    }
+
 	async updateProblem(slug: string, data: Partial<IProblem>): Promise<IProblem | null> {
 		if (data.statement) {
 			// TODO: Re-enable sanitizeMarkdown when ESM issue is fixed
@@ -58,5 +62,18 @@ export class ProblemService {
 
 	async updateTestcaseUrl(slug: string, url: string): Promise<IProblem | null> {
 		return await this.problemRepository.updateProblem(slug, { testcaseUrl: url });
+	}
+
+	async getRandomPublishedProblemId(): Promise<string> {
+		const count = await this.problemRepository.getPublishedProblemsCount();
+		if (count === 0) {
+			throw new NotFoundError("No published problems available");
+		}
+		const offset = Math.floor(Math.random() * count);
+		const problemId = await this.problemRepository.getPublishedProblemIdByOffset(offset);
+		if (!problemId) {
+			throw new NotFoundError("No published problems available");
+		}
+		return problemId;
 	}
 }

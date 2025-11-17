@@ -3,6 +3,7 @@ import { NextFunction, Request, Response } from "express";
 import { ProblemRepository } from "../repositories/problem.repo";
 import { IProblem } from "../models/problem.model";
 import { generateProblemByAI } from "../generative-ai/problem.ai";
+import logger from "../config/logger.config";
 
 class ProblemController {
 	constructor(private readonly problemService: ProblemService) {}
@@ -25,6 +26,16 @@ class ProblemController {
 		const problem = await this.problemService.getProblemBySlug(slug);
 		res.status(200).json({ data: problem });
 	};
+
+	public getProblemById = async (
+        req: Request,
+        res: Response,
+        next: NextFunction
+    ): Promise<void> => {
+        const { id } = req.params;
+        const problem = await this.problemService.getProblemById(id);
+        res.status(200).json({ data: problem });
+    }
 
 	public createProblem = async (
 		req: Request,
@@ -86,6 +97,17 @@ class ProblemController {
 		} catch (error) {
 			next(error);
 		}
+	};
+
+	public getRandomProblemId = async (
+		_req: Request,
+		res: Response,
+		_next: NextFunction
+	): Promise<void> => {
+		logger.info("Fetching random published problem ID");
+		const problemId = await this.problemService.getRandomPublishedProblemId();
+		logger.info(`Fetched random published problem ID: ${problemId}`);
+		res.status(200).json({ data: { problemId } });
 	};
 }
 
