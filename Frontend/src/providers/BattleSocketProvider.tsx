@@ -68,8 +68,15 @@ export const BattleSocketProvider = (props: PropsWithChildren) => {
 		};
 		const handleChallengeRejected = () => {
 			setIsPageLoading(false);
+			setIsChallangeRequestOpen(false);
 			console.log("Challenge was rejected");
 			alert("Your challenge was rejected");
+		};
+		const handleMatchError = (data: { challengeId: string; error: string }) => {
+			setIsPageLoading(false);
+			setIsChallangeRequestOpen(false);
+			console.error("Match error:", data.error);
+			alert(`Failed to start match: ${data.error}`);
 		};
 
 		socket.on("connect", handleConnect);
@@ -77,6 +84,7 @@ export const BattleSocketProvider = (props: PropsWithChildren) => {
 		socket.on("challenged", handleChallenged);
 		socket.on("match_start", handleMatchStart);
 		socket.on("challenge-rejected", handleChallengeRejected);
+		socket.on("match_error", handleMatchError);
 
 		return () => {
 			socket.off("connect", handleConnect);
@@ -84,6 +92,7 @@ export const BattleSocketProvider = (props: PropsWithChildren) => {
 			socket.off("challenged", handleChallenged);
 			socket.off("match_start", handleMatchStart);
 			socket.off("challenge-rejected", handleChallengeRejected);
+			socket.off("match_error", handleMatchError);
 			socket.disconnect();
 		};
 	}, [setIsPageLoading]);
