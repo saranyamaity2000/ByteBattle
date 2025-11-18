@@ -1,8 +1,7 @@
 import type { Socket, Server } from "socket.io";
-import { redisService } from "../services/redis-service.js";
+import { redisService } from "../clients/redis.client.js";
 import type { ChallengeData } from "../types/challange.js";
 import { ChallengeModel } from "../models/challenge.model.js";
-import { serverConfig } from "../config/server.config.js";
 import { problemClient } from "../clients/problem.client.js";
 
 export type SocketHandler = (socket: Socket, io: Server) => void;
@@ -26,7 +25,7 @@ async function storeChallenge(
 
 /**
  * Handles the challenge acceptance flow
- * TODO: handling the scenario when both players are connected through different WS servers
+ * Redis adapter handles cross-server communication automatically
  */
 async function handleChallengeAcceptance(
 	socket: Socket,
@@ -34,19 +33,21 @@ async function handleChallengeAcceptance(
 	challengeStatus: { challangeId: string; hasAccepted: boolean },
 	challengeData: ChallengeData
 ): Promise<void> {
-	const opponentSocketId = await redisService.subscriber.get(`email:${challengeData.fromEmail}`);
-
-	if (!opponentSocketId) {
-		console.log(
-			`User ${challengeData.fromEmail} not connected anymore but the challenge can still go on in background!`
-		);
-	}
+	// Join the accepter to the challenge room FIRST
+	// (the challenger already joined when they initiated the challenge)
+	socket.join(`challenge:${challengeStatus.challangeId}`);
 
 	// Fetch random problem ID from Problem Service
 	const problemId: string | null = await problemClient.fetchRandomProblemId();
 	if (!problemId) {
 		console.error("Failed to get random problem ID");
-		// TODO: Emit error event to both users
+		// Now both users are in the room, so both will receive the error
+		io.to(`challenge:${challengeStatus.challangeId}`).emit("match_error", {
+			challengeId: challengeStatus.challangeId,
+			error: "Failed to fetch problem",
+		});
+		// Clean up Redis challenge data
+		await redisService.publisher.del(`challenge:${challengeStatus.challangeId}`);
 		return;
 	}
 
@@ -58,9 +59,6 @@ async function handleChallengeAcceptance(
 		problemId
 	);
 
-	// (the challenger person already joined when challenged)
-	socket.join(`challenge:${challengeStatus.challangeId}`);
-
 	// Prepare match start data
 	const matchStartData = {
 		challangedBy: challengeData.fromEmail,
@@ -69,15 +67,12 @@ async function handleChallengeAcceptance(
 		problemId,
 	};
 
-	// Emit match_start to both users
-	// TODO: we can expose a rest API for UI to fetch on going match data to show user
-	if (opponentSocketId) {
-		io.to(opponentSocketId).emit("match_start", matchStartData);
-	}
-	io.to(socket.id).emit("match_start", matchStartData);
+	// Emit match_start to both users in the challenge room
+	// Redis adapter ensures this reaches both users even if on different servers
+	io.to(`challenge:${challengeStatus.challangeId}`).emit("match_start", matchStartData);
 
 	// Clean up Redis challenge data
-	await redisService.subscriber.del(`challenge:${challengeStatus.challangeId}`);
+	await redisService.publisher.del(`challenge:${challengeStatus.challangeId}`);
 	console.log(
 		`Match started for challenge ${challengeStatus.challangeId} with problem ${problemId}`
 	);
@@ -85,22 +80,26 @@ async function handleChallengeAcceptance(
 
 /**
  * Handles the challenge rejection flow
- * TODO: handling the scenario when both players are connected through different WS servers
+ * Redis adapter handles cross-server communication automatically
  */
 async function handleChallengeRejection(
 	io: Server,
 	challengeStatus: { challangeId: string },
 	challengeData: ChallengeData
 ): Promise<void> {
-	await redisService.subscriber.del(`challenge:${challengeStatus.challangeId}`);
+	// Emit rejection to the challenge room (reaches challenger even on different server)
+	io.to(`challenge:${challengeStatus.challangeId}`).emit("challenge-rejected", {
+		challengeId: challengeStatus.challangeId,
+		rejectedBy: challengeData.toEmail,
+	});
 
-	const socketId = await redisService.subscriber.get(`email:${challengeData.fromEmail}`);
-	if (socketId) {
-		io.to(socketId).emit("challenge-rejected", {
-			challengeId: challengeStatus.challangeId,
-		});
-		io.to(socketId).socketsLeave(`challenge:${challengeStatus.challangeId}`);
-	}
+	// Clean up: remove all sockets from the challenge room
+	io.in(`challenge:${challengeStatus.challangeId}`).socketsLeave(
+		`challenge:${challengeStatus.challangeId}`
+	);
+
+	// Clean up Redis challenge data
+	await redisService.publisher.del(`challenge:${challengeStatus.challangeId}`);
 }
 
 /**
@@ -113,20 +112,20 @@ function isUserAuthorizedForChallenge(userEmail: string, challengeData: Challeng
 export const handleDisconnect: SocketHandler = (socket, _io) => {
 	socket.on("disconnect", async () => {
 		console.log("User disconnected:", socket.user.user_metadata.name || socket.user.email);
-		await redisService.subscriber.del(`email:${socket.user.email}`);
+		await redisService.publisher.del(`email:${socket.user.email}`);
 	});
 };
 
 export const handleChallenge: SocketHandler = (socket, io) => {
 	socket.on("challenge", async ({ chanllangeToEmail }: { chanllangeToEmail: string }) => {
-		const opponentSocketId: string | null = await redisService.subscriber.get(
+		const opponentSocketId: string | null = await redisService.publisher.get(
 			`email:${chanllangeToEmail}`
 		);
 		if (!socket.user.email || !opponentSocketId) {
 			return;
 		}
 		const challengeId = await redisService.getUniqueBase62Id();
-		redisService.subscriber.set(
+		await redisService.publisher.set(
 			`challenge:${challengeId}`,
 			JSON.stringify({
 				fromEmail: socket.user.email,
@@ -147,7 +146,7 @@ export const handleChallengeReply: SocketHandler = (socket, io) => {
 		async (challangeStatus: { challangeId: string; hasAccepted: boolean }) => {
 			try {
 				// Check if the challenge exists
-				const challengeDataStr = await redisService.subscriber.get(
+				const challengeDataStr = await redisService.publisher.get(
 					`challenge:${challangeStatus.challangeId}`
 				);
 				if (!challengeDataStr) {

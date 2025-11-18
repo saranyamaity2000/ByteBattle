@@ -11,10 +11,13 @@ export interface ServerConfig {
 	SUPABASE_API_KEY: string;
 	MONGO_URI: string;
 	PROBLEM_SERVICE_URL: string;
+	APP_NAME: string;
 }
+
 export const serverConfig: ServerConfig = {
 	PORT: +(process.env.PORT || "3101"),
-	NODE_ENV: process.env.NODE_ENV || "development",
+	NODE_ENV: process.env.NODE_ENV || "local",
+	APP_NAME: process.env.APP_NAME || "ByteBattle",
 	REDIS_HOST: process.env.REDIS_HOST || "localhost",
 	REDIS_PORT: +(process.env.REDIS_PORT || "6379"),
 	REDIS_PASSWORD: process.env.REDIS_PASSWORD || "",

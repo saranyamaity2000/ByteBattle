@@ -1,19 +1,12 @@
-import { Redis, type Callback } from "ioredis";
+import { Redis, type Callback, type RedisOptions } from "ioredis";
 import { serverConfig } from "../config/server.config.js";
 import { Utils } from "../utilities/util.js";
 
-export const subscriberRedisClient = new Redis({
-	host: serverConfig.REDIS_HOST,
-	port: serverConfig.REDIS_PORT,
-	password: serverConfig.REDIS_PASSWORD,
-	db: serverConfig.REDIS_DB,
-});
-
-class RedisService {
+class RedisClient {
 	private _publisher: Redis;
 	private _subscriber: Redis;
 	constructor() {
-		const redisConfig = {
+		const redisConfig: RedisOptions = {
 			host: serverConfig.REDIS_HOST,
 			port: serverConfig.REDIS_PORT,
 			password: serverConfig.REDIS_PASSWORD,
@@ -28,9 +21,10 @@ class RedisService {
 	get subscriber() {
 		return this._subscriber;
 	}
+
 	async getUniqueBase62Id(): Promise<string> {
 		const uniqueId = await this.publisher.incr("uniqueId:number");
 		return Utils.getBase62String(uniqueId);
 	}
 }
-export const redisService = new RedisService();
+export const redisService = new RedisClient();
