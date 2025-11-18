@@ -116,21 +116,14 @@ export const BattleSocketProvider = (props: PropsWithChildren) => {
 		setIsChallangeRequestOpen(false);
 	};
 
-	// focusMode related effect
+	// Combined effect for managing socket connection based on auth state and focus mode
 	useEffect(() => {
 		const socket = battleSocketRef.current;
-		if (isFocusMode) socket.disconnect();
-		else socket.connect();
-	}, [isFocusMode]);
-
-	// Auth state related effect - disconnect socket when user logs out
-	useEffect(() => {
-		const socket = battleSocketRef.current;
-		// If user is null (logged out), disconnect the socket
-		if (!user) {
+		// Disconnect if user is logged out OR focus mode is enabled
+		if (!user || isFocusMode) {
 			socket.disconnect();
-		} else if (!isFocusMode) {
-			// If user is logged in and not in focus mode, ensure socket is connected
+		} else {
+			// Connect only if user is logged in AND focus mode is disabled
 			socket.connect();
 		}
 	}, [user, isFocusMode]);
