@@ -7,8 +7,10 @@ import {
 	handleChallenge,
 	handleChallengeReply,
 } from "./handlers/socket.handler.js";
-import { redisService } from "./services/redis-service.js";
+import { redisService } from "./clients/redis.client.js";
 import mongoose from "mongoose";
+import express from "express";
+import { createAdapter } from "@socket.io/redis-adapter";
 
 declare module "socket.io" {
 	interface Socket {
@@ -16,12 +18,16 @@ declare module "socket.io" {
 	}
 }
 
-const httpServer = createServer();
+const app = express();
+const httpServer = createServer(app);
 const io = new Server(httpServer, {
 	cors: {
 		origin: "*",
 		allowedHeaders: ["*"],
 	},
+	adapter: createAdapter(redisService.publisher, redisService.subscriber, {
+		key: `${serverConfig.APP_NAME}:${serverConfig.NODE_ENV}`, // to make sure ioredis's publishing and subscribing keys are unique per app and environment
+	}),
 });
 
 // Auth middleware
