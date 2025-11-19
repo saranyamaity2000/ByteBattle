@@ -2,8 +2,8 @@ import { Schema, model, Document } from "mongoose";
 
 export interface IChallenge extends Document {
 	challengeId: string;
-	challangedFrom: string; // email of the challenger
-	challangedTo: string; // email of the challenged user
+	challengedFrom: string; // email of the challenger
+	challengedTo: string; // email of the challenged user
 	problemId: string; // the problem ID for this challenge
 	createdAt: Date;
 	updatedAt: Date;
@@ -13,8 +13,8 @@ export interface IChallenge extends Document {
 const ChallengeSchema = new Schema<IChallenge>(
 	{
 		challengeId: { type: String, required: true, unique: true, index: true }, // this one we will use
-		challangedFrom: { type: String, required: true },
-		challangedTo: { type: String, required: true },
+		challengedFrom: { type: String, required: true },
+		challengedTo: { type: String, required: true },
 		problemId: { type: String, required: true },
 		winner: { type: String, required: false },
 	},

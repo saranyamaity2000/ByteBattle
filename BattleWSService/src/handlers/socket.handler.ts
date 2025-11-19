@@ -1,6 +1,6 @@
 import type { Socket, Server } from "socket.io";
 import { redisService } from "../clients/redis.client.js";
-import type { ChallengeData } from "../types/challange.js";
+import type { ChallengeData } from "../types/challenge.type.js";
 import { ChallengeModel } from "../models/challenge.model.js";
 import { problemClient } from "../clients/problem.client.js";
 
@@ -17,8 +17,8 @@ async function storeChallenge(
 ): Promise<void> {
 	await ChallengeModel.create({
 		challengeId,
-		challangedFrom: challengedFrom,
-		challangedTo: challengedTo,
+		challengedFrom: challengedFrom,
+		challengedTo: challengedTo,
 		problemId,
 	});
 }
@@ -30,30 +30,30 @@ async function storeChallenge(
 async function handleChallengeAcceptance(
 	socket: Socket,
 	io: Server,
-	challengeStatus: { challangeId: string; hasAccepted: boolean },
+	challengeStatus: { challengeId: string; hasAccepted: boolean },
 	challengeData: ChallengeData
 ): Promise<void> {
 	// Join the accepter to the challenge room FIRST
 	// (the challenger already joined when they initiated the challenge)
-	socket.join(`challenge:${challengeStatus.challangeId}`);
+	socket.join(`challenge:${challengeStatus.challengeId}`);
 
 	// Fetch random problem ID from Problem Service
 	const problemId: string | null = await problemClient.fetchRandomProblemId();
 	if (!problemId) {
 		console.error("Failed to get random problem ID");
 		// Now both users are in the room, so both will receive the error
-		io.to(`challenge:${challengeStatus.challangeId}`).emit("match_error", {
-			challengeId: challengeStatus.challangeId,
+		io.to(`challenge:${challengeStatus.challengeId}`).emit("match_error", {
+			challengeId: challengeStatus.challengeId,
 			error: "Failed to fetch problem",
 		});
 		// Clean up Redis challenge data
-		await redisService.publisher.del(`challenge:${challengeStatus.challangeId}`);
+		await redisService.publisher.del(`challenge:${challengeStatus.challengeId}`);
 		return;
 	}
 
 	// Store challenge in db
 	await storeChallenge(
-		challengeStatus.challangeId,
+		challengeStatus.challengeId,
 		challengeData.fromEmail,
 		challengeData.toEmail,
 		problemId
@@ -61,20 +61,20 @@ async function handleChallengeAcceptance(
 
 	// Prepare match start data
 	const matchStartData = {
-		challangedBy: challengeData.fromEmail,
-		challangedTo: challengeData.toEmail,
-		challengeId: challengeStatus.challangeId,
+		challengedBy: challengeData.fromEmail,
+		challengedTo: challengeData.toEmail,
+		challengeId: challengeStatus.challengeId,
 		problemId,
 	};
 
 	// Emit match_start to both users in the challenge room
 	// Redis adapter ensures this reaches both users even if on different servers
-	io.to(`challenge:${challengeStatus.challangeId}`).emit("match_start", matchStartData);
+	io.to(`challenge:${challengeStatus.challengeId}`).emit("match_start", matchStartData);
 
 	// Clean up Redis challenge data
-	await redisService.publisher.del(`challenge:${challengeStatus.challangeId}`);
+	await redisService.publisher.del(`challenge:${challengeStatus.challengeId}`);
 	console.log(
-		`Match started for challenge ${challengeStatus.challangeId} with problem ${problemId}`
+		`Match started for challenge ${challengeStatus.challengeId} with problem ${problemId}`
 	);
 }
 
@@ -84,22 +84,22 @@ async function handleChallengeAcceptance(
  */
 async function handleChallengeRejection(
 	io: Server,
-	challengeStatus: { challangeId: string },
+	challengeStatus: { challengeId: string },
 	challengeData: ChallengeData
 ): Promise<void> {
 	// Emit rejection to the challenge room (reaches challenger even on different server)
-	io.to(`challenge:${challengeStatus.challangeId}`).emit("challenge-rejected", {
-		challengeId: challengeStatus.challangeId,
+	io.to(`challenge:${challengeStatus.challengeId}`).emit("challenge-rejected", {
+		challengeId: challengeStatus.challengeId,
 		rejectedBy: challengeData.toEmail,
 	});
 
 	// Clean up: remove all sockets from the challenge room
-	io.in(`challenge:${challengeStatus.challangeId}`).socketsLeave(
-		`challenge:${challengeStatus.challangeId}`
+	io.in(`challenge:${challengeStatus.challengeId}`).socketsLeave(
+		`challenge:${challengeStatus.challengeId}`
 	);
 
 	// Clean up Redis challenge data
-	await redisService.publisher.del(`challenge:${challengeStatus.challangeId}`);
+	await redisService.publisher.del(`challenge:${challengeStatus.challengeId}`);
 }
 
 /**
@@ -134,7 +134,7 @@ export const handleChallenge: SocketHandler = (socket, io) => {
 		);
 		socket.join(`challenge:${challengeId}`);
 		io.to(opponentSocketId).emit("challenged", {
-			challangedBy: socket.user.email,
+			challengedBy: socket.user.email,
 			challengeId: `${challengeId}`,
 		});
 	});
@@ -143,11 +143,11 @@ export const handleChallenge: SocketHandler = (socket, io) => {
 export const handleChallengeReply: SocketHandler = (socket, io) => {
 	socket.on(
 		"challenge-reply",
-		async (challangeStatus: { challangeId: string; hasAccepted: boolean }) => {
+		async (challengeStatus: { challengeId: string; hasAccepted: boolean }) => {
 			try {
 				// Check if the challenge exists
 				const challengeDataStr = await redisService.publisher.get(
-					`challenge:${challangeStatus.challangeId}`
+					`challenge:${challengeStatus.challengeId}`
 				);
 				if (!challengeDataStr) {
 					return;
@@ -162,7 +162,7 @@ export const handleChallengeReply: SocketHandler = (socket, io) => {
 						"User not authorized to accept/reject challenge:",
 						socket.user.user_metadata.name || socket.user.email,
 						"Challenge Id:",
-						challangeStatus.challangeId,
+						challengeStatus.challengeId,
 						"Challenge Data:",
 						challengeData
 					);
@@ -170,13 +170,13 @@ export const handleChallengeReply: SocketHandler = (socket, io) => {
 				}
 
 				// Handle rejection
-				if (!challangeStatus.hasAccepted) {
-					await handleChallengeRejection(io, challangeStatus, challengeData);
+				if (!challengeStatus.hasAccepted) {
+					await handleChallengeRejection(io, challengeStatus, challengeData);
 					return;
 				}
 
 				// Handle acceptance
-				await handleChallengeAcceptance(socket, io, challangeStatus, challengeData);
+				await handleChallengeAcceptance(socket, io, challengeStatus, challengeData);
 			} catch (error) {
 				console.error("Error in challenge reply handler:", error);
 			}
