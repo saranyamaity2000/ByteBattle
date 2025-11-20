@@ -6,7 +6,7 @@ import { Swords, Wifi, WifiOff, Mail, AlertCircle, Clock, Target } from "lucide-
 
 export const BattlePage: React.FC = () => {
 	const [opponentEmail, setOpponentEmail] = useState("");
-	const [timeLimit, setTimeLimit] = useState<number>(30);
+	const [timeLimitInMin, setTimeLimit] = useState<number>(30);
 	const [difficulty, setDifficulty] = useState<string>("medium");
 	const [error, setError] = useState("");
 
@@ -32,8 +32,8 @@ export const BattlePage: React.FC = () => {
 		}
 
 		battleSocket?.emit("challenge", {
-			chanllangeToEmail: opponentEmail.trim(),
-			timeLimit,
+			chanllangeToEmail: opponentEmail.toLowerCase().trim(),
+			timeLimitInMin,
 			difficulty,
 		});
 		setIsPageLoading(true);
@@ -131,18 +131,18 @@ export const BattlePage: React.FC = () => {
 								{/* Time Limit */}
 								<div className="space-y-2">
 									<label
-										htmlFor="timeLimit"
+										htmlFor="timeLimitInMin"
 										className="text-base font-semibold flex items-center gap-2"
 									>
 										<Clock className="w-4 h-4" />
 										Time Limit (min)
 									</label>
 									<input
-										id="timeLimit"
+										id="timeLimitInMin"
 										type="number"
 										min="5"
 										max="120"
-										value={timeLimit}
+										value={timeLimitInMin}
 										onChange={(e) =>
 											setTimeLimit(parseInt(e.target.value) || 30)
 										}

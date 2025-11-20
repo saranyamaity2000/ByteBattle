@@ -11,7 +11,7 @@ import { problemService } from "@/services/problemService";
 type ChallengeRequestData = {
 	challengedBy: string;
 	challengeId: string;
-	timeLimit: number;
+	timeLimitInMin: number;
 	difficulty: string;
 };
 
@@ -134,18 +134,17 @@ export const BattleSocketProvider = (props: PropsWithChildren) => {
 		>
 			<>
 				{props.children}
-				<Dialog open={isChallengeRequestOpen} onOpenChange={setIsChallengeRequestOpen}>
-					<DialogContent>
-						<ChallengeRequest
-							challengedBy={challengeRequestData?.challengedBy ?? ""}
-							challengeId={challengeRequestData?.challengeId ?? ""}
-							timeLimit={challengeRequestData?.timeLimit}
-							difficulty={challengeRequestData?.difficulty}
-							acceptChallenge={onAcceptChallenge}
-							rejectChallenge={onRejectChallenge}
-						></ChallengeRequest>
-					</DialogContent>
-				</Dialog>
+				{challengeRequestData && (
+					<Dialog open={isChallengeRequestOpen} onOpenChange={setIsChallengeRequestOpen}>
+						<DialogContent>
+							<ChallengeRequest
+								challengeReqData={challengeRequestData}
+								acceptChallenge={onAcceptChallenge}
+								rejectChallenge={onRejectChallenge}
+							></ChallengeRequest>
+						</DialogContent>
+					</Dialog>
+				)}
 			</>
 		</BattleSocketContext.Provider>
 	);

@@ -3,44 +3,49 @@ import { Button } from "./ui/button";
 import { Clock, Target } from "lucide-react";
 
 export const ChallengeRequest: React.FC<{
-	challengedBy: string;
-	challengeId: string;
-	timeLimit?: number;
-	difficulty?: string;
+	challengeReqData: {
+		challengedBy: string;
+		challengeId: string;
+		timeLimitInMin?: number;
+		difficulty?: string;
+	};
 	acceptChallenge: () => void;
 	rejectChallenge: () => void;
-}> = ({ challengedBy, challengeId, timeLimit, difficulty, acceptChallenge, rejectChallenge }) => {
+}> = ({ challengeReqData, acceptChallenge, rejectChallenge }) => {
 	return (
 		<div className="flex flex-col items-center justify-center p-4">
 			<h2 className="text-gray-800 font-bold text-2xl mb-6">1 V 1 Coding Challenge</h2>
 			<div className="space-y-3 mb-6 w-full">
 				<div className="bg-gray-50 p-4 rounded-lg">
 					<p className="text-gray-600">
-						<span className="font-bold">Challenge ID:</span> {challengeId}
+						<span className="font-bold">Challenge ID:</span>{" "}
+						{challengeReqData.challengeId}
 					</p>
 					<p className="text-gray-600">
-						<span className="font-bold">Challenged By:</span> {challengedBy}
+						<span className="font-bold">Challenged By:</span>{" "}
+						{challengeReqData.challengedBy}
 					</p>
-					{timeLimit && (
+					{challengeReqData.timeLimitInMin && (
 						<p className="text-gray-600 flex items-center gap-2">
 							<Clock className="w-4 h-4" />
-							<span className="font-bold">Time Limit:</span> {timeLimit} minutes
+							<span className="font-bold">Time Limit:</span>{" "}
+							{challengeReqData.timeLimitInMin} minutes
 						</p>
 					)}
-					{difficulty && (
+					{challengeReqData.difficulty && (
 						<p className="text-gray-600 flex items-center gap-2">
 							<Target className="w-4 h-4" />
 							<span className="font-bold">Difficulty:</span>
 							<span
 								className={`capitalize font-semibold ${
-									difficulty === "easy"
+									challengeReqData.difficulty === "easy"
 										? "text-green-600"
-										: difficulty === "medium"
+										: challengeReqData.difficulty === "medium"
 										? "text-yellow-600"
 										: "text-red-600"
 								}`}
 							>
-								{difficulty}
+								{challengeReqData.difficulty}
 							</span>
 						</p>
 					)}
