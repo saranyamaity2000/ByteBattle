@@ -67,6 +67,8 @@ async function handleChallengeAcceptance(
 		challengedTo: challengeData.toEmail,
 		challengeId: challengeStatus.challengeId,
 		problemId,
+		timeLimitInMin: challengeData.timeLimitInMin,
+		difficulty: challengeData.difficulty,
 	};
 
 	// Emit match_start to both users in the challenge room
