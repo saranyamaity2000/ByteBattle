@@ -1,6 +1,6 @@
 import logger from "../config/logger.config";
 import { ProblemCreationDTO } from "../dtos/problem.dto";
-import { IProblem } from "../models/problem.model";
+import { IProblem, ProblemDifficulty } from "../models/problem.model";
 // import { sanitizeMarkdown } from "../utils/helpers/markdown.helpers";
 import { BadRequestError, NotFoundError } from "../utils/errors/app.error";
 import { ProblemRepository } from "./../repositories/problem.repo";
@@ -64,13 +64,16 @@ export class ProblemService {
 		return await this.problemRepository.updateProblem(slug, { testcaseUrl: url });
 	}
 
-	async getRandomPublishedProblemId(): Promise<string> {
-		const count = await this.problemRepository.getPublishedProblemsCount();
+	async getRandomPublishedProblemId(filter: { difficulty?: ProblemDifficulty }): Promise<string> {
+		const count = await this.problemRepository.getPublishedProblemsCount(filter);
 		if (count === 0) {
 			throw new NotFoundError("No published problems available");
 		}
 		const offset = Math.floor(Math.random() * count);
-		const problemId = await this.problemRepository.getPublishedProblemIdByOffset(offset);
+		const problemId = await this.problemRepository.getPublishedProblemIdByOffset(
+			offset,
+			filter
+		);
 		if (!problemId) {
 			throw new NotFoundError("No published problems available");
 		}

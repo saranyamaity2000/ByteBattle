@@ -4,26 +4,30 @@ import { io } from "socket.io-client";
 import { useFocusModeContext } from "@/hooks/context-hooks/useFocusModeContext";
 import { BattleSocketContext, type UsableSocket } from "@/contexts/BattleSocketContext";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { ChallangeRequest } from "@/components/ChallangeRequest";
+import { ChallengeRequest } from "@/components/ChallengeRequest";
 import { usePageLoaderContext } from "@/hooks/context-hooks/usePageLoaderContext";
 import { problemService } from "@/services/problemService";
 
-type ChallangeRequestData = {
-	challangedBy: string;
+type ChallengeRequestData = {
+	challengedBy: string;
 	challengeId: string;
+	timeLimitInMin: number;
+	difficulty: string;
 };
 
 type MatchStartData = {
-	challangedBy: string;
-	challangedTo: string;
+	challengedBy: string;
+	challengedTo: string;
 	challengeId: string;
 	problemId: string;
+	timeLimit: number;
+	difficulty: string;
 };
 
 export const BattleSocketProvider = (props: PropsWithChildren) => {
 	const [isSocketConnected, setIsSocketConnected] = useState(false);
-	const [isChallangeRequestOpen, setIsChallangeRequestOpen] = useState(false);
-	const [challangeRequestData, setChallangeRequestData] = useState<ChallangeRequestData | null>(
+	const [isChallengeRequestOpen, setIsChallengeRequestOpen] = useState(false);
+	const [challengeRequestData, setChallengeRequestData] = useState<ChallengeRequestData | null>(
 		null
 	);
 	// Store match data for future use (e.g., redirecting to battle page)
@@ -46,9 +50,9 @@ export const BattleSocketProvider = (props: PropsWithChildren) => {
 
 		const handleConnect = () => setIsSocketConnected(true);
 		const handleDisconnect = () => setIsSocketConnected(false);
-		const handleChallenged = (data: ChallangeRequestData) => {
-			setIsChallangeRequestOpen(true);
-			setChallangeRequestData(data);
+		const handleChallenged = (data: ChallengeRequestData) => {
+			setIsChallengeRequestOpen(true);
+			setChallengeRequestData(data);
 		};
 		const handleMatchStart = (data: MatchStartData) => {
 			console.log("Match started with data:", data);
@@ -63,18 +67,18 @@ export const BattleSocketProvider = (props: PropsWithChildren) => {
 				})
 				.finally(() => {
 					setIsPageLoading(false);
-					setIsChallangeRequestOpen(false);
+					setIsChallengeRequestOpen(false);
 				});
 		};
 		const handleChallengeRejected = () => {
 			setIsPageLoading(false);
-			setIsChallangeRequestOpen(false);
+			setIsChallengeRequestOpen(false);
 			console.log("Challenge was rejected");
 			alert("Your challenge was rejected");
 		};
 		const handleMatchError = (data: { challengeId: string; error: string }) => {
 			setIsPageLoading(false);
-			setIsChallangeRequestOpen(false);
+			setIsChallengeRequestOpen(false);
 			console.error("Match error:", data.error);
 			alert(`Failed to start match: ${data.error}`);
 		};
@@ -98,20 +102,20 @@ export const BattleSocketProvider = (props: PropsWithChildren) => {
 	}, [setIsPageLoading]);
 
 	const onAcceptChallenge = () => {
-		if (!challangeRequestData) return;
+		if (!challengeRequestData) return;
 		setIsPageLoading(true);
 		battleSocketRef.current.emit("challenge-reply", {
-			challangeId: challangeRequestData.challengeId,
+			challengeId: challengeRequestData.challengeId,
 			hasAccepted: true,
 		});
 	};
 	const onRejectChallenge = () => {
-		if (!challangeRequestData) return;
+		if (!challengeRequestData) return;
 		battleSocketRef.current.emit("challenge-reply", {
-			challangeId: challangeRequestData.challengeId,
+			challengeId: challengeRequestData.challengeId,
 			hasAccepted: false,
 		});
-		setIsChallangeRequestOpen(false);
+		setIsChallengeRequestOpen(false);
 	};
 
 	// focusMode related effect
@@ -130,16 +134,17 @@ export const BattleSocketProvider = (props: PropsWithChildren) => {
 		>
 			<>
 				{props.children}
-				<Dialog open={isChallangeRequestOpen} onOpenChange={setIsChallangeRequestOpen}>
-					<DialogContent>
-						<ChallangeRequest
-							challangedBy={challangeRequestData?.challangedBy ?? ""}
-							challengeId={challangeRequestData?.challengeId ?? ""}
-							acceptChallenge={onAcceptChallenge}
-							rejectChallenge={onRejectChallenge}
-						></ChallangeRequest>
-					</DialogContent>
-				</Dialog>
+				{challengeRequestData && (
+					<Dialog open={isChallengeRequestOpen} onOpenChange={setIsChallengeRequestOpen}>
+						<DialogContent>
+							<ChallengeRequest
+								challengeReqData={challengeRequestData}
+								acceptChallenge={onAcceptChallenge}
+								rejectChallenge={onRejectChallenge}
+							></ChallengeRequest>
+						</DialogContent>
+					</Dialog>
+				)}
 			</>
 		</BattleSocketContext.Provider>
 	);

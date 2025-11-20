@@ -1,5 +1,5 @@
 import { ProblemCreationDTO } from "../dtos/problem.dto";
-import ProblemModel, { IProblem } from "../models/problem.model";
+import ProblemModel, { ProblemDifficulty, IProblem } from "../models/problem.model";
 
 export class ProblemRepository {
 	async createProblem(data: ProblemCreationDTO): Promise<IProblem> {
@@ -32,12 +32,21 @@ export class ProblemRepository {
 		return ProblemModel.find().exec();
 	}
 
-	async getPublishedProblemsCount(): Promise<number> {
-		return await ProblemModel.countDocuments({ isPublished: true }).exec();
+	async getPublishedProblemsCount(filter: { difficulty?: ProblemDifficulty }): Promise<number> {
+		return await ProblemModel.countDocuments({
+			isPublished: true,
+			...(filter.difficulty && { difficulty: filter.difficulty }),
+		}).exec();
 	}
 
-	async getPublishedProblemIdByOffset(offset: number): Promise<string | null> {
-		const problem = await ProblemModel.findOne({ isPublished: true })
+	async getPublishedProblemIdByOffset(
+		offset: number,
+		filter: { difficulty?: ProblemDifficulty }
+	): Promise<string | null> {
+		const problem = await ProblemModel.findOne({
+			isPublished: true,
+			difficulty: filter.difficulty,
+		})
 			.skip(offset)
 			.select("_id")
 			.exec();

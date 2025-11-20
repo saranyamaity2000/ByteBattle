@@ -7,7 +7,7 @@ import {
 	handleChallenge,
 	handleChallengeReply,
 } from "./handlers/socket.handler.js";
-import { redisService } from "./clients/redis.client.js";
+import { redisClient } from "./clients/redis.client.js";
 import mongoose from "mongoose";
 import express from "express";
 import { createAdapter } from "@socket.io/redis-adapter";
@@ -25,7 +25,7 @@ const io = new Server(httpServer, {
 		origin: "*",
 		allowedHeaders: ["*"],
 	},
-	adapter: createAdapter(redisService.publisher, redisService.subscriber, {
+	adapter: createAdapter(redisClient.publisher, redisClient.subscriber, {
 		key: `${serverConfig.APP_NAME}:${serverConfig.NODE_ENV}`, // to make sure ioredis's publishing and subscribing keys are unique per app and environment
 	}),
 });
@@ -46,7 +46,7 @@ io.use(async (socket, next) => {
 		}
 		socket.user = user;
 		if (socket.user.email) {
-			redisService.publisher.set(`email:${socket.user.email}`, socket.id);
+			redisClient.publisher.set(`email:${socket.user.email}`, socket.id);
 		}
 		next();
 	} catch (err) {

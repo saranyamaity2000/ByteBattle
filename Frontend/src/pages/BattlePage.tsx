@@ -2,10 +2,12 @@ import { Button } from "@/components/ui/button";
 import { useBattleSocketContext } from "@/hooks/context-hooks/useBattleSocketContext";
 import { usePageLoaderContext } from "@/hooks/context-hooks/usePageLoaderContext";
 import { useState } from "react";
-import { Swords, Wifi, WifiOff, Mail, AlertCircle } from "lucide-react";
+import { Swords, Wifi, WifiOff, Mail, AlertCircle, Clock, Target } from "lucide-react";
 
 export const BattlePage: React.FC = () => {
 	const [opponentEmail, setOpponentEmail] = useState("");
+	const [timeLimitInMin, setTimeLimit] = useState<number>(30);
+	const [difficulty, setDifficulty] = useState<string>("medium");
 	const [error, setError] = useState("");
 
 	const { battleSocket, isSocketConnected } = useBattleSocketContext();
@@ -16,7 +18,7 @@ export const BattlePage: React.FC = () => {
 		return emailRegex.test(email);
 	};
 
-	const handleChallange = () => {
+	const handleChallenge = () => {
 		setError("");
 
 		if (!opponentEmail.trim()) {
@@ -29,13 +31,17 @@ export const BattlePage: React.FC = () => {
 			return;
 		}
 
-		battleSocket?.emit("challenge", { chanllangeToEmail: opponentEmail.trim() });
+		battleSocket?.emit("challenge", {
+			challengeToEmail: opponentEmail.toLowerCase().trim(),
+			timeLimitInMin,
+			difficulty,
+		});
 		setIsPageLoading(true);
 	};
 
 	const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
 		if (e.key === "Enter" && opponentEmail.trim() && isSocketConnected) {
-			handleChallange();
+			handleChallenge();
 		}
 	};
 
@@ -121,6 +127,51 @@ export const BattlePage: React.FC = () => {
 								/>
 							</div>
 
+							<div className="grid grid-cols-2 gap-4">
+								{/* Time Limit */}
+								<div className="space-y-2">
+									<label
+										htmlFor="timeLimitInMin"
+										className="text-base font-semibold flex items-center gap-2"
+									>
+										<Clock className="w-4 h-4" />
+										Time Limit (min)
+									</label>
+									<input
+										id="timeLimitInMin"
+										type="number"
+										min="5"
+										max="120"
+										value={timeLimitInMin}
+										onChange={(e) =>
+											setTimeLimit(parseInt(e.target.value) || 30)
+										}
+										className="w-full text-lg h-12 px-4 border-2 border-gray-300 rounded-lg focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200 transition-colors"
+									/>
+								</div>
+
+								{/* Difficulty */}
+								<div className="space-y-2">
+									<label
+										htmlFor="difficulty"
+										className="text-base font-semibold flex items-center gap-2"
+									>
+										<Target className="w-4 h-4" />
+										Difficulty
+									</label>
+									<select
+										id="difficulty"
+										value={difficulty}
+										onChange={(e) => setDifficulty(e.target.value)}
+										className="w-full text-lg h-12 px-4 border-2 border-gray-300 rounded-lg focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200 transition-colors bg-white"
+									>
+										<option value="easy">Easy</option>
+										<option value="medium">Medium</option>
+										<option value="hard">Hard</option>
+									</select>
+								</div>
+							</div>
+
 							{error && (
 								<div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-center gap-3">
 									<AlertCircle className="h-5 w-5 text-red-500 flex-shrink-0" />
@@ -131,7 +182,7 @@ export const BattlePage: React.FC = () => {
 							<Button
 								variant="glowingBorder"
 								size="lg"
-								onClick={handleChallange}
+								onClick={handleChallenge}
 								disabled={!opponentEmail.trim()}
 								className="w-full text-lg h-12 font-bold flex items-center justify-center gap-2"
 							>

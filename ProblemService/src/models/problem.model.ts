@@ -1,7 +1,7 @@
 import { Schema, model, Document } from "mongoose";
 
 // Difficulty enum for problems
-export enum Difficulty {
+export enum ProblemDifficulty {
 	EASY = "easy",
 	MEDIUM = "medium",
 	HARD = "hard",
@@ -20,7 +20,7 @@ export interface IProblem extends Document {
 	title: string;
 	slug: string; // identifier
 	statement: string; // markdown / HTML / plain text of the problem
-	difficulty: Difficulty;
+	difficulty: ProblemDifficulty;
 	examples: IProblemExample[];
 	constraints?: string[]; // i.e. ["1 <= n <= 100", "1 <= m <= 100"]
 	timeLimitMs?: number;
@@ -56,7 +56,7 @@ const ProblemSchema = new Schema<IProblem>(
 		title: { type: String, required: true, trim: true },
 		slug: { type: String, required: true, trim: true, unique: true, lowercase: true },
 		statement: { type: String, required: true },
-		difficulty: { type: String, enum: Object.values(Difficulty) },
+		difficulty: { type: String, enum: Object.values(ProblemDifficulty) },
 		examples: { type: [ProblemExampleSchema], default: [] },
 		constraints: { type: [String], default: [] },
 		timeLimitMs: { type: Number, default: 1000 },
