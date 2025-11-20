@@ -14,6 +14,24 @@ class RedisClient {
 		};
 		this._publisher = new Redis(redisConfig);
 		this._subscriber = new Redis(redisConfig);
+
+		// Add error handlers to prevent unhandled error warnings
+		this._publisher.on("error", (err) => {
+			console.error("Redis Publisher Error:", err);
+		});
+
+		this._subscriber.on("error", (err) => {
+			console.error("Redis Subscriber Error:", err);
+		});
+
+		// Optional: Add connection event handlers for better debugging
+		this._publisher.on("connect", () => {
+			console.log("Redis Publisher connected");
+		});
+
+		this._subscriber.on("connect", () => {
+			console.log("Redis Subscriber connected");
+		});
 	}
 	get publisher() {
 		return this._publisher;
