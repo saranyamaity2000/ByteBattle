@@ -35,7 +35,7 @@ export class ProblemRepository {
 	async getPublishedProblemsCount(filter: { difficulty?: ProblemDifficulty }): Promise<number> {
 		return await ProblemModel.countDocuments({
 			isPublished: true,
-			difficulty: filter.difficulty,
+			...(filter.difficulty && { difficulty: filter.difficulty }),
 		}).exec();
 	}
 
