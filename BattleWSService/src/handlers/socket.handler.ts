@@ -125,12 +125,12 @@ export const handleChallenge: SocketHandler = (socket, io) => {
 	socket.on(
 		"challenge",
 		async (challengeReq: {
-			chanllangeToEmail: string;
+			challengeToEmail: string;
 			timeLimitInMin: number;
 			difficulty: ChallengeDifficulty;
 		}) => {
 			const opponentSocketId: string | null = await socketService.getSocketId(
-				challengeReq.chanllangeToEmail
+				challengeReq.challengeToEmail
 			);
 			if (!socket.user.email || !opponentSocketId) {
 				return;
@@ -138,7 +138,7 @@ export const handleChallenge: SocketHandler = (socket, io) => {
 			const challengeId = await challengeService.getUniqueBase62Id();
 			await challengeService.storeChallengeReq(challengeId, {
 				fromEmail: socket.user.email,
-				toEmail: challengeReq.chanllangeToEmail,
+				toEmail: challengeReq.challengeToEmail,
 				timeLimitInMin: challengeReq.timeLimitInMin,
 				difficulty: challengeReq.difficulty,
 			});

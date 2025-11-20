@@ -32,7 +32,7 @@ export const BattlePage: React.FC = () => {
 		}
 
 		battleSocket?.emit("challenge", {
-			chanllangeToEmail: opponentEmail.toLowerCase().trim(),
+			challengeToEmail: opponentEmail.toLowerCase().trim(),
 			timeLimitInMin,
 			difficulty,
 		});
