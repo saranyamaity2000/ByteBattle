@@ -10,7 +10,7 @@ export type SocketHandler = (socket: Socket, io: Server) => void;
 /**
  * TODO : storeChallenge <- service layer <- repository layer
  */
-async function storeChallenge(challangeData: {
+async function storeChallenge(challengeData: {
 	challengeId: string;
 	challengedFrom: string;
 	challengedTo: string;
@@ -18,7 +18,7 @@ async function storeChallenge(challangeData: {
 	timeLimitInMin: number;
 	difficulty: string;
 }): Promise<void> {
-	await ChallengeModel.create({ ...challangeData });
+	await ChallengeModel.create({ ...challengeData });
 }
 
 /**
