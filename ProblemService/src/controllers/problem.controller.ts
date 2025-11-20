@@ -106,6 +106,11 @@ class ProblemController {
 	): Promise<void> => {
 		logger.info("Fetching random published problem ID");
 		const difficulty = req.query.difficulty as ProblemDifficulty;
+		// Validate difficulty if provided
+		if (difficulty && !Object.values(ProblemDifficulty).includes(difficulty)) {
+			res.status(400).json({ error: "Invalid difficulty value" });
+			return;
+		}
 		const problemId = await this.problemService.getRandomPublishedProblemId({ difficulty });
 		logger.info(`Fetched random published problem ID: ${problemId}`);
 		res.status(200).json({ data: { problemId } });
