@@ -14,9 +14,9 @@ class ProblemClient {
 		});
 	}
 
-	async fetchRandomProblemId(): Promise<string | null> {
+	async fetchRandomProblemId(filter: { difficulty: string }): Promise<string | null> {
 		try {
-			const response = await this.httpClient.get("/problems/id/random");
+			const response = await this.httpClient.get("/problems/id/random", { params: filter });
 			if (response.status !== 200) {
 				console.error("Failed to fetch random problem:", response.statusText);
 				return null;

@@ -1,5 +1,11 @@
 import { Schema, model, Document } from "mongoose";
 
+export enum ChallengeDifficulty {
+	EASY = "easy",
+	MEDIUM = "medium",
+	HARD = "hard",
+}
+
 export interface IChallenge extends Document {
 	challengeId: string;
 	challengedFrom: string; // email of the challenger
@@ -8,6 +14,8 @@ export interface IChallenge extends Document {
 	createdAt: Date;
 	updatedAt: Date;
 	winner?: string; // email of the winner, optional
+	timeLimitInMin: number; // time limit for the challenge in minutes
+	difficulty: ChallengeDifficulty; // difficulty level of the challenge
 }
 
 const ChallengeSchema = new Schema<IChallenge>(
@@ -17,6 +25,8 @@ const ChallengeSchema = new Schema<IChallenge>(
 		challengedTo: { type: String, required: true },
 		problemId: { type: String, required: true },
 		winner: { type: String, required: false },
+		timeLimitInMin: { type: Number, required: true },
+		difficulty: { type: String, required: true, enum: Object.values(ChallengeDifficulty) },
 	},
 	{ timestamps: true }
 );

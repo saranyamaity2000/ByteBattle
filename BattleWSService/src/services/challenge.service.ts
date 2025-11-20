@@ -1,0 +1,28 @@
+import type { BasicChallengeInfo } from "../types/challenge.type.js";
+import { Utils } from "../utilities/util.js";
+import { Redis } from "ioredis";
+import { redisClient } from "../clients/redis.client.js";
+
+class ChallengeService {
+	constructor(private readonly rc: Redis) {}
+	async storeChallengeReq(challengeId: string, challengeData: BasicChallengeInfo): Promise<void> {
+		await this.rc.set(`challengeReq:${challengeId}`, JSON.stringify(challengeData));
+	}
+	async getChallengeReq(challengeId: string): Promise<BasicChallengeInfo | null> {
+		const challengeDataStr = await this.rc.get(`challengeReq:${challengeId}`);
+		if (!challengeDataStr) {
+			return null;
+		}
+		return JSON.parse(challengeDataStr) as BasicChallengeInfo;
+	}
+	async deleteChallengeReq(challengeId: string): Promise<void> {
+		await this.rc.del(`challengeReq:${challengeId}`);
+	}
+	async getUniqueBase62Id(): Promise<string> {
+		const uniqueId = await this.rc.incr("uniqueId:number");
+		return Utils.getBase62String(uniqueId);
+	}
+}
+
+export const challengeService = new ChallengeService(redisClient.client);
+
