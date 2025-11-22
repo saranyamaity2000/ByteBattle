@@ -15,6 +15,9 @@ type ServerConfig = {
 		URL: string;
 		API_KEY: string;
 	};
+	AI: {
+		MAX_TOKENS: number;
+	};
 };
 
 function loadEnv() {
@@ -40,4 +43,7 @@ export const serverConfig: ServerConfig = {
 	ALLOWED_ORIGINS: process.env.ALLOWED_ORIGINS
 		? process.env.ALLOWED_ORIGINS.split(",")
 		: ["http://localhost:5173"],
+	AI: {
+		MAX_TOKENS: Number(process.env.AI_MAX_TOKENS) || 2000,
+	},
 };
