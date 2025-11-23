@@ -10,6 +10,8 @@ A modern, responsive web application for the ByteBattle coding platform. Built w
 - 📝 Submit code solutions and view results
 - 🎯 Difficulty-based problem categorization
 - 📊 Real-time submission evaluation feedback
+- ⚔️ **Real-time coding battles** with Socket.IO
+- 🔐 **Supabase authentication** for user accounts
 - ✍️ **Admin: Create and craft new problems**
 - 🔧 **Admin: Modify existing problems**
 - 📦 **Admin: Upload and download test case files**
@@ -25,6 +27,8 @@ A modern, responsive web application for the ByteBattle coding platform. Built w
 - **Code Editor**: Monaco Editor
 - **Routing**: React Router v7
 - **HTTP Client**: Axios
+- **Real-time**: Socket.IO Client
+- **Authentication**: Supabase Auth
 - **Icons**: Lucide React
 
 ## Prerequisites
@@ -55,9 +59,19 @@ Update the environment variables:
 # API Configuration
 VITE_API_BASE_URL=http://localhost:3000/api/v1
 VITE_API_TIMEOUT=10000
+
+# Submission Service Configuration
+VITE_SUBMISSION_SERVICE_URL=http://localhost:3001/api/v1
+
+# Battle WebSocket Service Configuration
+VITE_BATTLE_SOCKET_URL=http://localhost:3101
+
+# Supabase Configuration
+VITE_SUPABASE_URL=your_supabase_project_url
+VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
 ```
 
-**Important**: Make sure the Problem Service is running on port 3001 and Submission Service on port 3000 before starting the frontend.
+**Important**: Make sure the Problem Service is running on port 3001, Submission Service on port 3000, and BattleWS Service on port 3101 before starting the frontend. You also need to set up a Supabase project for authentication.
 
 ### 3. Start Development Server
 
@@ -89,6 +103,7 @@ Frontend/
 │   │   ├── Home.tsx      # Landing page
 │   │   ├── Problems.tsx  # Problem listing
 │   │   ├── Problem.tsx   # Problem detail & editor
+│   │   ├── BattlePage.tsx # Real-time coding battles
 │   │   ├── CraftProblem.tsx  # Create new problems (Admin)
 │   │   └── ModifyProblem.tsx # Modify & manage problems (Admin)
 │   ├── services/         # API service layer
@@ -127,7 +142,15 @@ Frontend/
 - Execution time and memory usage
 - Error messages and debugging info
 
-### 4. Admin: Craft Problem (Create New)
+### 4. Real-time Battles
+- Challenge other users by email
+- Real-time challenge notifications via Socket.IO
+- Accept/decline challenges in real-time
+- Time-limited competitive coding
+- Random problem selection based on difficulty
+- Live battle status updates
+
+### 5. Admin: Craft Problem (Create New)
 - Create new coding problems with rich form interface
 - Set problem metadata: title, difficulty, tags
 - Add problem statement with Markdown support
@@ -135,7 +158,7 @@ Frontend/
 - Set constraints, time limits, and memory limits
 - Save as draft before publishing
 
-### 5. Admin: Modify Problem
+### 6. Admin: Modify Problem
 - Edit existing problem details
 - **Upload test case files** (JSON format)
 - **Download test case files** for review
@@ -178,6 +201,7 @@ The application includes the following routes:
 | `/` | Home | Landing page with features overview |
 | `/problems` | Problems | Browse all available problems |
 | `/problem/:problemId` | Problem | Solve a specific problem with code editor |
+| `/battle` | BattlePage | Real-time coding battles with other users |
 | `/craft-problem` | CraftProblem | Create new problems (Admin) |
 | `/problem/modify/:problemSlug` | ModifyProblem | Modify problems and manage test cases (Admin) |
 
