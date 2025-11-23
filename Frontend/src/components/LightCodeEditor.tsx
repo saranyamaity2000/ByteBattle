@@ -34,23 +34,26 @@ export default function LightCodeEditor({
 	
 	// Store code for each language separately
 	const [codeByLanguage, setCodeByLanguage] = useState<Record<string, string>>(() => {
-		const savedCode: Record<string, string> = {};
+		const result: Record<string, string> = {};
 		
-		// Try to load saved code for each language
-		if (problemId) {
-			SUPPORTED_LANGUAGES.forEach((lang) => {
+		// Initialize code for each supported language
+		SUPPORTED_LANGUAGES.forEach((lang) => {
+			// Try to load saved code from localStorage
+			if (problemId) {
 				const storageKey = `problem_${problemId}_${lang.id}`;
 				const saved = localStorage.getItem(storageKey);
 				if (saved) {
-					savedCode[lang.id] = saved;
+					result[lang.id] = saved;
+					return;
 				}
-			});
-		}
+			}
+			
+			// Fall back to initial code or default comment
+			const defaultComment = lang.id === "python" ? "# Your code here" : "// Your code here";
+			result[lang.id] = initialCode[lang.id] || defaultComment;
+		});
 		
-		return {
-			cpp: savedCode.cpp || initialCode.cpp || "// Your code here",
-			python: savedCode.python || initialCode.python || "# Your code here",
-		};
+		return result;
 	});
 	const [testCases, setTestCases] = useState<TestCase[]>([]);
 	const editorRef = useRef<EditorInstance | null>(null);
