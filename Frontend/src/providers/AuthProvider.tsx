@@ -15,6 +15,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 			setSession(session);
 			setUser(session?.user ?? null);
 			setLoading(false);
+			
+			// Check if there's a redirect path after successful auth
+			if (session?.user) {
+				const redirectPath = sessionStorage.getItem("auth_redirect_path");
+				if (redirectPath) {
+					sessionStorage.removeItem("auth_redirect_path");
+					window.location.href = redirectPath;
+				}
+			}
 		});
 
 		// Listen for auth changes (automatic session persistence!)
@@ -29,8 +38,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 		return () => subscription.unsubscribe();
 	}, []);
 
-	const signInWithGoogle = async () => {
+	const signInWithGoogle = async (redirectPath?: string) => {
 		setLoading(true);
+		
+		// Store redirect path in session storage if provided
+		if (redirectPath) {
+			sessionStorage.setItem("auth_redirect_path", redirectPath);
+		}
+		
 		const { error } = await supabase.auth.signInWithOAuth({
 			provider: "google",
 			options: {

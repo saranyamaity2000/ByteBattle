@@ -84,10 +84,10 @@ export default function Navbar() {
 							</>
 						) : (
 							<>
-								<Button variant="outline" onClick={signInWithGoogle}>
+								<Button variant="outline" onClick={() => signInWithGoogle()}>
 									Sign In with Google
 								</Button>
-								<Button onClick={signInWithGoogle}>Get Started</Button>
+								<Button onClick={() => signInWithGoogle()}>Get Started</Button>
 							</>
 						)}
 					</div>

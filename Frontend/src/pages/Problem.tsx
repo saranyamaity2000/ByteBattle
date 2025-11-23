@@ -1,10 +1,12 @@
 import { useState, useCallback } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useProblem } from "../hooks/useProblems";
+import { useAuthContext } from "../hooks/context-hooks/useAuthContext";
 import ResizablePane from "../components/ResizablePane";
 import LightCodeEditor from "../components/LightCodeEditor";
 import EvaluationResult from "../components/EvaluationResult";
 import Loader from "../components/Loader";
+import AuthModal from "../components/AuthModal";
 import { Button } from "../components/ui/button";
 import { ArrowLeft, CheckCircle, Clock, XCircle, AlertCircle } from "lucide-react";
 import type { TestCase } from "../components/TestCaseInput";
@@ -18,11 +20,13 @@ import {
 export default function Problem() {
 	const { problemId } = useParams<{ problemId: string }>();
 	const { problem, isLoading, error } = useProblem(problemId);
+	const { user, signInWithGoogle } = useAuthContext();
 
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [isRunning, setIsRunning] = useState(false);
 	const [evaluationResult, setEvaluationResult] = useState<SubmissionResult | null>(null);
 	const [showResult, setShowResult] = useState(false);
+	const [showAuthModal, setShowAuthModal] = useState(false);
 
 	// Map language to backend format
 	const mapLanguage = (lang: string): SupportedLanguage => {
@@ -57,6 +61,12 @@ export default function Problem() {
 
 	const handleSubmit = useCallback(
 		async (code: string, language: string) => {
+			// Check if user is authenticated
+			if (!user) {
+				setShowAuthModal(true);
+				return;
+			}
+			
 			if (!problemId) {
 				console.error("Problem ID is missing");
 				return;
@@ -104,12 +114,22 @@ export default function Problem() {
 				setIsSubmitting(false);
 			}
 		},
-		[problemId]
+		[problemId, user]
 	);
 
 	const handleCloseResult = useCallback(() => {
 		setShowResult(false);
 		setEvaluationResult(null);
+	}, []);
+	
+	const handleSignIn = useCallback(async () => {
+		setShowAuthModal(false);
+		// Pass current path to redirect back after login
+		await signInWithGoogle(window.location.pathname);
+	}, [signInWithGoogle]);
+	
+	const handleCloseAuthModal = useCallback(() => {
+		setShowAuthModal(false);
 	}, []);
 
 	if (isLoading) {
@@ -330,6 +350,7 @@ export default function Problem() {
 			onSubmit={handleSubmit}
 			isRunning={isRunning}
 			isSubmitting={isSubmitting}
+			problemId={problemId}
 		/>
 	);
 
@@ -354,6 +375,13 @@ export default function Problem() {
 				isOpen={showResult}
 				onClose={handleCloseResult}
 				result={evaluationResult}
+			/>
+			
+			{/* Auth Modal */}
+			<AuthModal
+				isOpen={showAuthModal}
+				onClose={handleCloseAuthModal}
+				onSignIn={handleSignIn}
 			/>
 		</div>
 	);

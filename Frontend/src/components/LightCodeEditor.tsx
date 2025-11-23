@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { Editor, type OnMount } from "@monaco-editor/react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { Button } from "./ui/button";
@@ -13,6 +13,7 @@ interface LightCodeEditorProps {
 	onSubmit: (code: string, language: string) => void;
 	isRunning: boolean;
 	isSubmitting: boolean;
+	problemId?: string;
 }
 
 export default function LightCodeEditor({
@@ -21,13 +22,33 @@ export default function LightCodeEditor({
 	onSubmit,
 	isRunning,
 	isSubmitting,
+	problemId,
 }: LightCodeEditorProps) {
 	const [language, setLanguage] = useState<string>("cpp");
+	
+	// Load code from localStorage if available, otherwise use initial code
+	const getStorageKey = useCallback((lang: string) => problemId ? `problem_${problemId}_${lang}` : null, [problemId]);
+	
 	// Store code for each language separately
-	const [codeByLanguage, setCodeByLanguage] = useState<Record<string, string>>(() => ({
-		cpp: initialCode.cpp || "// Your code here",
-		python: initialCode.python || "# Your code here",
-	}));
+	const [codeByLanguage, setCodeByLanguage] = useState<Record<string, string>>(() => {
+		const savedCode: Record<string, string> = {};
+		
+		// Try to load saved code for each language
+		["cpp", "python"].forEach((lang) => {
+			const storageKey = problemId ? `problem_${problemId}_${lang}` : null;
+			if (storageKey) {
+				const saved = localStorage.getItem(storageKey);
+				if (saved) {
+					savedCode[lang] = saved;
+				}
+			}
+		});
+		
+		return {
+			cpp: savedCode.cpp || initialCode.cpp || "// Your code here",
+			python: savedCode.python || initialCode.python || "# Your code here",
+		};
+	});
 	const [testCases, setTestCases] = useState<TestCase[]>([]);
 	const editorRef = useRef<EditorInstance | null>(null);
 
@@ -53,6 +74,18 @@ export default function LightCodeEditor({
 		},
 		[language]
 	);
+	
+	// Save code to localStorage whenever it changes
+	useEffect(() => {
+		if (problemId) {
+			Object.entries(codeByLanguage).forEach(([lang, code]) => {
+				const storageKey = getStorageKey(lang);
+				if (storageKey) {
+					localStorage.setItem(storageKey, code);
+				}
+			});
+		}
+	}, [codeByLanguage, problemId, getStorageKey]);
 
 	const handleEditorDidMount: OnMount = useCallback((editor) => {
 		editorRef.current = editor;
