@@ -16,6 +16,12 @@ interface LightCodeEditorProps {
 	problemId?: string;
 }
 
+// Define supported languages
+const SUPPORTED_LANGUAGES = [
+	{ id: "cpp", name: "C++", monacoId: "cpp" },
+	{ id: "python", name: "Python", monacoId: "python" },
+];
+
 export default function LightCodeEditor({
 	initialCode = {},
 	onRunCode,
@@ -26,23 +32,20 @@ export default function LightCodeEditor({
 }: LightCodeEditorProps) {
 	const [language, setLanguage] = useState<string>("cpp");
 	
-	// Load code from localStorage if available, otherwise use initial code
-	const getStorageKey = useCallback((lang: string) => problemId ? `problem_${problemId}_${lang}` : null, [problemId]);
-	
 	// Store code for each language separately
 	const [codeByLanguage, setCodeByLanguage] = useState<Record<string, string>>(() => {
 		const savedCode: Record<string, string> = {};
 		
 		// Try to load saved code for each language
-		["cpp", "python"].forEach((lang) => {
-			const storageKey = problemId ? `problem_${problemId}_${lang}` : null;
-			if (storageKey) {
+		if (problemId) {
+			SUPPORTED_LANGUAGES.forEach((lang) => {
+				const storageKey = `problem_${problemId}_${lang.id}`;
 				const saved = localStorage.getItem(storageKey);
 				if (saved) {
-					savedCode[lang] = saved;
+					savedCode[lang.id] = saved;
 				}
-			}
-		});
+			});
+		}
 		
 		return {
 			cpp: savedCode.cpp || initialCode.cpp || "// Your code here",
@@ -51,11 +54,6 @@ export default function LightCodeEditor({
 	});
 	const [testCases, setTestCases] = useState<TestCase[]>([]);
 	const editorRef = useRef<EditorInstance | null>(null);
-
-	const languages = [
-		{ id: "cpp", name: "C++", monacoId: "cpp" },
-		{ id: "python", name: "Python", monacoId: "python" },
-	];
 
 	// Get current code for the selected language
 	const currentCode = codeByLanguage[language];
@@ -79,13 +77,11 @@ export default function LightCodeEditor({
 	useEffect(() => {
 		if (problemId) {
 			Object.entries(codeByLanguage).forEach(([lang, code]) => {
-				const storageKey = getStorageKey(lang);
-				if (storageKey) {
-					localStorage.setItem(storageKey, code);
-				}
+				const storageKey = `problem_${problemId}_${lang}`;
+				localStorage.setItem(storageKey, code);
 			});
 		}
-	}, [codeByLanguage, problemId, getStorageKey]);
+	}, [codeByLanguage, problemId]);
 
 	const handleEditorDidMount: OnMount = useCallback((editor) => {
 		editorRef.current = editor;
@@ -148,7 +144,7 @@ export default function LightCodeEditor({
 							<SelectValue />
 						</SelectTrigger>
 						<SelectContent>
-							{languages.map((lang) => (
+							{SUPPORTED_LANGUAGES.map((lang) => (
 								<SelectItem key={lang.id} value={lang.id}>
 									{lang.name}
 								</SelectItem>
@@ -182,7 +178,7 @@ export default function LightCodeEditor({
 			<div className="flex-1 overflow-hidden">
 				<Editor
 					height="100%"
-					language={languages.find((l) => l.id === language)?.monacoId || "cpp"}
+					language={SUPPORTED_LANGUAGES.find((l) => l.id === language)?.monacoId || "cpp"}
 					value={currentCode}
 					onChange={handleCodeChange}
 					onMount={handleEditorDidMount}
