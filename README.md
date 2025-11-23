@@ -221,9 +221,9 @@ Real-time WebSocket connections via Socket.IO:
 
 ### Frontend
 ```env
-VITE_API_BASE_URL=http://localhost:3000/api/v1
+VITE_API_BASE_URL=http://localhost:3001/api/v1
 VITE_API_TIMEOUT=10000
-VITE_SUBMISSION_SERVICE_URL=http://localhost:3001/api/v1
+VITE_SUBMISSION_SERVICE_URL=http://localhost:3000/api/v1
 VITE_BATTLE_SOCKET_URL=http://localhost:3101
 VITE_SUPABASE_URL=your_supabase_project_url
 VITE_SUPABASE_ANON_KEY=your_supabase_anon_key

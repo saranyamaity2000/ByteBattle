@@ -57,11 +57,11 @@ Update the environment variables:
 
 ```env
 # API Configuration
-VITE_API_BASE_URL=http://localhost:3000/api/v1
+VITE_API_BASE_URL=http://localhost:3001/api/v1
 VITE_API_TIMEOUT=10000
 
 # Submission Service Configuration
-VITE_SUBMISSION_SERVICE_URL=http://localhost:3001/api/v1
+VITE_SUBMISSION_SERVICE_URL=http://localhost:3000/api/v1
 
 # Battle WebSocket Service Configuration
 VITE_BATTLE_SOCKET_URL=http://localhost:3101
