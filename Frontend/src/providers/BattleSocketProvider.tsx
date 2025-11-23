@@ -2,6 +2,7 @@ import { getAuthToken } from "@/utils/auth";
 import { useEffect, useRef, useState, type PropsWithChildren } from "react";
 import { io } from "socket.io-client";
 import { useFocusModeContext } from "@/hooks/context-hooks/useFocusModeContext";
+import { useAuthContext } from "@/hooks/context-hooks/useAuthContext";
 import { BattleSocketContext, type UsableSocket } from "@/contexts/BattleSocketContext";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { ChallengeRequest } from "@/components/ChallengeRequest";
@@ -43,6 +44,7 @@ export const BattleSocketProvider = (props: PropsWithChildren) => {
 	);
 	const { isFocusMode } = useFocusModeContext();
 	const { setIsPageLoading } = usePageLoaderContext();
+	const { user } = useAuthContext();
 
 	// onMount and onUnmount
 	useEffect(() => {
@@ -118,12 +120,17 @@ export const BattleSocketProvider = (props: PropsWithChildren) => {
 		setIsChallengeRequestOpen(false);
 	};
 
-	// focusMode related effect
+	// Combined effect for managing socket connection based on auth state and focus mode
 	useEffect(() => {
 		const socket = battleSocketRef.current;
-		if (isFocusMode) socket.disconnect();
-		else socket.connect();
-	}, [isFocusMode]);
+		// Disconnect if user is logged out OR focus mode is enabled
+		if (!user || isFocusMode) {
+			socket.disconnect();
+		} else {
+			// Connect only if user is logged in AND focus mode is disabled
+			socket.connect();
+		}
+	}, [user, isFocusMode]);
 
 	return (
 		<BattleSocketContext.Provider
