@@ -31,7 +31,7 @@ app.use(
 	cors({
 		origin: serverConfig.ALLOWED_ORIGINS,
 		credentials: true,
-		allowedHeaders: ["*"],
+		allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"], // without explicit mentioning header, will get CORs error
 	})
 );
 app.use(express.json());
