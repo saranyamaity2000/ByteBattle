@@ -15,4 +15,5 @@ class SocketService {
 	}
 }
 
-export const socketService = new SocketService(redisClient.client);
+const socketService = new SocketService(redisClient.client);
+export default socketService;

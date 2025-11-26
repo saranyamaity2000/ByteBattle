@@ -33,4 +33,7 @@ const ChallengeSchema = new Schema<IChallenge>(
 
 export const ChallengeModel = model<IChallenge>("Challenge", ChallengeSchema);
 
+// create index for createdAt
+ChallengeSchema.index({ createdAt: 1 });
+
 export default ChallengeModel;

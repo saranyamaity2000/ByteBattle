@@ -12,6 +12,7 @@ export interface ServerConfig {
 	MONGO_URI: string;
 	PROBLEM_SERVICE_URL: string;
 	APP_NAME: string;
+	ALLOWED_ORIGINS: string[];
 }
 
 export const serverConfig: ServerConfig = {
@@ -26,4 +27,7 @@ export const serverConfig: ServerConfig = {
 	SUPABASE_API_KEY: process.env.SUPABASE_API_KEY || "",
 	MONGO_URI: process.env.MONGO_URI || "mongodb://localhost:27017/bytebattle",
 	PROBLEM_SERVICE_URL: process.env.PROBLEM_SERVICE_URL || "http://localhost:3000",
+	ALLOWED_ORIGINS: process.env.ALLOWED_ORIGINS
+		? process.env.ALLOWED_ORIGINS.split(",")
+		: ["http://localhost:5173"],
 };
