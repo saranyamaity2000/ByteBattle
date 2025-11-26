@@ -1,5 +1,5 @@
 import axios from "axios";
-import { getAuthToken } from "@/utils/auth";
+import { authInjectionInterceptor } from "./interceptors/authIntercepter";
 
 // Create axios instance for submission service
 const submissionApiClient = axios.create({
@@ -11,24 +11,9 @@ const submissionApiClient = axios.create({
 });
 
 // Add request interceptor for authentication
-submissionApiClient.interceptors.request.use(
-	async (config) => {
-		if (import.meta.env.DEV) {
-			console.log(`Making ${config.method?.toUpperCase()} request to ${config.url}`);
-		}
-
-		// Add Authorization header with Bearer token
-		const token = await getAuthToken();
-		if (token) {
-			config.headers.Authorization = `Bearer ${token}`;
-		}
-
-		return config;
-	},
-	(error) => {
-		return Promise.reject(error);
-	}
-);
+submissionApiClient.interceptors.request.use(authInjectionInterceptor, (error) => {
+	return Promise.reject(error);
+});
 
 // Add response interceptor for error handling
 submissionApiClient.interceptors.response.use(
