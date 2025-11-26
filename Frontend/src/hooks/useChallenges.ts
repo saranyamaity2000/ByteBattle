@@ -19,7 +19,7 @@ export function useChallenges(type: "ongoing" | "past") {
 				const challenges = await challengeTypeToFetcherMap[type]();
 				setChallenges(challenges);
 			} catch (err) {
-				setError(err instanceof Error ? err.message : "Failed to fetch ongoingChallenges");
+				setError(err instanceof Error ? err.message : `Failed to fetch ${type} challenges`);
 			} finally {
 				setIsLoading(false);
 			}
