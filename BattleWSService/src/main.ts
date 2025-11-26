@@ -11,14 +11,32 @@ import { redisClient } from "./clients/redis.client.js";
 import mongoose from "mongoose";
 import express from "express";
 import { createAdapter } from "@socket.io/redis-adapter";
+import cors from "cors";
+import v1Router from "./routers/v1/index.router.js";
+import { initializeSupabase } from "./middlewares/auth.middleware.js";
 
 declare module "socket.io" {
 	interface Socket {
 		user: User;
 	}
 }
+declare module "express-serve-static-core" {
+	interface Request {
+		user?: User;
+	}
+}
 
 const app = express();
+app.use(
+	cors({
+		origin: serverConfig.ALLOWED_ORIGINS,
+		credentials: true,
+		allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"], // without explicit mentioning header, will get CORs error
+	})
+);
+app.use(express.json());
+app.use("/api/v1", v1Router);
+
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
 	cors: {
@@ -63,6 +81,7 @@ io.on("connection", (socket) => {
 });
 
 (async () => {
+	initializeSupabase(serverConfig.SUPABASE_URL, serverConfig.SUPABASE_API_KEY);
 	try {
 		await mongoose.connect(serverConfig.MONGO_URI);
 		console.log("MongoDB connected successfully");

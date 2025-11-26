@@ -2,24 +2,10 @@ import type { Socket, Server } from "socket.io";
 import type { BasicChallengeInfo } from "../types/challenge.type.js";
 import { ChallengeDifficulty, ChallengeModel } from "../models/challenge.model.js";
 import { problemClient } from "../clients/problem.client.js";
-import { challengeService } from "../services/challenge.service.js";
-import { socketService } from "../services/socket.service.js";
+import challengeService from "../services/challenge.service.js";
+import socketService from "../services/socket.service.js";
 
 export type SocketHandler = (socket: Socket, io: Server) => void;
-
-/**
- * TODO : storeChallenge <- service layer <- repository layer
- */
-async function storeChallenge(challengeData: {
-	challengeId: string;
-	challengedFrom: string;
-	challengedTo: string;
-	problemId: string;
-	timeLimitInMin: number;
-	difficulty: string;
-}): Promise<void> {
-	await ChallengeModel.create({ ...challengeData });
-}
 
 /**
  * Handles the challenge acceptance flow
@@ -52,7 +38,7 @@ async function handleChallengeAcceptance(
 	}
 
 	// Store challenge in db
-	await storeChallenge({
+	await challengeService.createChallenge({
 		challengeId: challengeStatus.challengeId,
 		challengedFrom: challengeData.fromEmail,
 		challengedTo: challengeData.toEmail,

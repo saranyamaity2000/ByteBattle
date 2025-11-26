@@ -6,3 +6,12 @@ export type BasicChallengeInfo = {
 	timeLimitInMin: number;
 	difficulty: ChallengeDifficulty;
 };
+
+export type CreateChallengeDTO = {
+	challengeId: string;
+	challengedFrom: string;
+	challengedTo: string;
+	problemId: string;
+	timeLimitInMin: number;
+	difficulty: ChallengeDifficulty;
+};
