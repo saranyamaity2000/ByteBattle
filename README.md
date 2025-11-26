@@ -12,23 +12,23 @@ The project follows a microservices architecture with the following components:
 │   (Port 5173)   │
 └────────┬────────┘
          │
-         ├──────────────────┬─────────────────────┬──────────────────────┐
-         │                  │                     │                      │
-         ▼                  ▼                     ▼                      ▼
-┌────────────────┐ ┌─────────────────┐ ┌────────────────────┐ ┌────────────────┐
-│ Problem Service│ │Submission Service│ │ BattleWS Service   │ │                │
-│  (Port 3001)   │ │   (Port 3000)    │ │   (Port 3101)      │ │                │
-│   MongoDB      │ │    MongoDB       │ │   MongoDB + Redis  │ │                │
-└────────────────┘ └──────┬───────────┘ │   Socket.IO        │ └────────────────┘
-                          │              └────────────────────┘
-                          │ RabbitMQ
-                          │
-                          ▼
-                 ┌────────────────┐
-                 │Evaluator Service│
-                 │   (Go Worker)   │
-                 │    + Docker     │
-                 └────────────────┘
+         ├────────────────────┬─────────────────────┐
+         │                    │                     │
+         ▼                    ▼                     ▼
+┌────────────────┐  ┌─────────────────┐  ┌────────────────────┐
+│ Problem Service│  │Submission Service│  │ BattleWS Service   │
+│  (Port 3001)   │  │   (Port 3000)    │  │   (Port 3101)      │
+│   MongoDB      │  │    MongoDB       │  │   MongoDB + Redis  │
+└────────────────┘  └──────┬──────────┘  │   Socket.IO        │
+                           │             └────────────────────┘
+                           │ RabbitMQ
+                           │
+                           ▼
+                  ┌────────────────┐
+                  │Evaluator Service│
+                  │   (Go Worker)   │
+                  │    + Docker     │
+                  └────────────────┘
 ```
 
 ## Components
