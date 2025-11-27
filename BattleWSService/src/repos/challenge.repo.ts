@@ -11,22 +11,17 @@ class ChallengeRepo {
 					$or: [{ challengedFrom: userEmail }, { challengedTo: userEmail }],
 				},
 				{
-					$or: [
-						{ winner: { $exists: true } },
-						{
-							$expr: {
-								$gt: [
-									{
-										$add: [
-											"$createdAt",
-											{ $multiply: ["$timeLimitInMin", 60 * 1000] },
-										],
-									},
-									new Date(),
-								],
+					winner: { $exists: false },
+				},
+				{
+					$expr: {
+						$gt: [
+							{
+								$add: ["$createdAt", { $multiply: ["$timeLimitInMin", 60 * 1000] }],
 							},
-						},
-					],
+							new Date(),
+						],
+					},
 				},
 			],
 		});

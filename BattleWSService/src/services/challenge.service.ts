@@ -3,7 +3,7 @@ import type { IChallenge } from "../models/challenge.model.js";
 import { Utils } from "../utilities/util.js";
 import { Redis } from "ioredis";
 import { redisClient } from "../clients/redis.client.js";
-import challengeRepo from "../repos/challange.repo.js";
+import challengeRepo from "../repos/challenge.repo.js";
 
 class ChallengeService {
 	constructor(private readonly rc: Redis) {}
