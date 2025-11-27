@@ -290,7 +290,7 @@ export const BattlePage: React.FC = () => {
 												.slice((currentPage - 1) * 5, currentPage * 5)
 												.map((challenge) => (
 													<div
-														key={challenge.id}
+														key={challenge.challengeId}
 														className="p-4 border-2 border-gray-200 rounded-lg hover:border-indigo-300 transition-colors bg-gradient-to-r from-gray-50 to-slate-50"
 													>
 														<div className="flex items-center justify-between">

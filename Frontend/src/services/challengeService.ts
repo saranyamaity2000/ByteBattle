@@ -27,12 +27,13 @@ apiClient.interceptors.response.use(
 );
 
 export interface ApiChallenge {
-	id: string;
+	challengeId: string;
 	challengedFrom: string;
 	challengedTo: string;
 	problemId: string;
 	timeLimitInMin: number;
 	createdAt: string;
+	updatedAt: string;
 	winner?: string;
 }
 
