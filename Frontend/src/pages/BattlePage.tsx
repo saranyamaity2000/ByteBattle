@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { useChallenges } from "@/hooks/useChallenges";
 import { useAuthContext } from "@/hooks/context-hooks/useAuthContext";
+import Utils from "@/utils/utils";
 
 export const BattlePage: React.FC = () => {
 	const [opponentEmail, setOpponentEmail] = useState("");
@@ -50,11 +51,6 @@ export const BattlePage: React.FC = () => {
 		}
 	}, [errorOngoingChallenges, errorPastChallenges]);
 
-	const validateEmail = (email: string): boolean => {
-		const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-		return emailRegex.test(email);
-	};
-
 	const handleChallenge = () => {
 		setError("");
 
@@ -63,7 +59,7 @@ export const BattlePage: React.FC = () => {
 			return;
 		}
 
-		if (!validateEmail(opponentEmail)) {
+		if (!Utils.validateEmail(opponentEmail)) {
 			setError("Please enter a valid email address");
 			return;
 		}
