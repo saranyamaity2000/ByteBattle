@@ -8,7 +8,8 @@ export interface CreateSubmissionRequestDTO {
 	problemId: string;
 	lang: SupportedSubmissionLang;
 	code: string;
-	userId?: string;
+	userId?: string; // user email address
+	challengeId?: string;
 }
 
 export interface SubmissionResponseDTO {

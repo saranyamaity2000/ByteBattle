@@ -5,7 +5,12 @@ export enum SupportedSubmissionLang {
 	PYTHON3 = "python3",
 }
 
-export type SubmissionStatus = "pending" | "processing" | "completed" | "failed";
+export enum SubmissionStatus {
+	PENDING = "pending",
+	PROCESSING = "processing",
+	COMPLETED = "completed",
+	FAILED = "failed",
+}
 
 export enum SubmissionVerdict {
 	ACCEPTED = "ACCEPTED",
@@ -25,9 +30,10 @@ export interface ISubmissionResult {
 }
 export interface ISubmission extends Document {
 	problemId: string;
+	challengeId?: string;
 	lang: SupportedSubmissionLang;
 	code: string;
-	userId?: string;
+	userId: string;
 	status: SubmissionStatus;
 	result?: ISubmissionResult;
 	createdAt: Date;
@@ -83,6 +89,10 @@ const submissionSchema = new Schema<ISubmission>(
 			required: true,
 			trim: true,
 		},
+		challengeId: {
+			type: String,
+			trim: true,
+		},
 		lang: {
 			type: String,
 			enum: Object.values(SupportedSubmissionLang),
@@ -95,11 +105,12 @@ const submissionSchema = new Schema<ISubmission>(
 		userId: {
 			type: String,
 			trim: true,
+			required: true,
 		},
 		status: {
 			type: String,
-			enum: ["pending", "processing", "completed", "failed"],
-			default: "pending",
+			enum: Object.values(SubmissionStatus),
+			default: SubmissionStatus.PENDING,
 		},
 		result: {
 			type: submissionResultSchema,
@@ -120,7 +131,7 @@ const submissionSchema = new Schema<ISubmission>(
 );
 
 // Create indexes for better query performance
-submissionSchema.index({ problemId: 1 });
+submissionSchema.index({ problemId: 1, challengeId: 1 });
 submissionSchema.index({ userId: 1 });
 submissionSchema.index({ status: 1 });
 submissionSchema.index({ createdAt: -1 });

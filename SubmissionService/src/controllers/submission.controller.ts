@@ -22,11 +22,11 @@ export class SubmissionController {
 		reply: FastifyReply
 	) => {
 		// Add authenticated user ID to submission
-		const userId = request.user?.id;
+		const userId = request.user?.email;
 		if (!userId) {
 			return reply.code(401).send({
 				error: "Unauthorized",
-				message: "User ID not found in token",
+				message: "Unauthorized to create submission",
 			});
 		}
 

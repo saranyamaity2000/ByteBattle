@@ -6,5 +6,10 @@ const v1Router = express.Router();
 
 v1Router.get("/challenges/ongoing", verifySupabaseToken, challengeController.getOngoingChallenges);
 v1Router.get("/challenges/past", verifySupabaseToken, challengeController.getPastChallenges);
+v1Router.post(
+	"/challenges/callback",
+	verifySupabaseToken,
+	challengeController.handleChallengeCallback
+);
 
 export default v1Router;
