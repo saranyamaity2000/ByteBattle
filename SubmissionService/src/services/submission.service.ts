@@ -9,13 +9,16 @@ import { NotFoundError, BadRequestError, ExternalServiceError } from "../utils/e
 import { constantConfig } from "../configs";
 import SubmissionPublisherService from "./submission.publisher.service";
 import { ProblemClient } from "../clients/problem.client";
+import { SubmissionStatus, SubmissionVerdict } from "../models/submission.model";
+import { ChallengeClient } from "../clients/challenge.client";
 
 export class SubmissionService {
 	constructor(
 		private readonly logger: FastifyBaseLogger,
 		private readonly submissionRepository: SubmissionRepository,
 		private readonly publisherService: SubmissionPublisherService,
-		private readonly problemClient: ProblemClient
+		private readonly problemClient: ProblemClient,
+		private readonly challengeClient: ChallengeClient
 	) {}
 
 	async createSubmission(
@@ -68,11 +71,31 @@ export class SubmissionService {
 		id: string,
 		updateData: UpdateSubmissionStatusRequestDTO
 	): Promise<SubmissionResponseDTO> {
-		const submission = await this.submissionRepository.updateById(id, updateData);
-		if (!submission) {
-			throw new NotFoundError("Submission not found with id: " + id);
+		const session = await this.submissionRepository.startTransaction();
+
+		try {
+			const submission = await this.submissionRepository.updateById(id, updateData, session);
+			if (!submission) {
+				throw new NotFoundError("Submission not found with id: " + id);
+			}
+			this.logger.info(`Updated submission: ${JSON.stringify(submission)}`);
+
+			if (
+				submission.status === SubmissionStatus.COMPLETED &&
+				submission.result?.verdict === SubmissionVerdict.ACCEPTED &&
+				submission.challengeId
+			) {
+				await this.challengeClient.notifySuccessfulSubmission(
+					submission.challengeId,
+					submission.userId
+				);
+			}
+
+			await this.submissionRepository.commitTransaction(session);
+			return submission;
+		} catch (error) {
+			await this.submissionRepository.abortTransaction(session);
+			throw error;
 		}
-		this.logger.info(`Updated submission: ${JSON.stringify(submission)}`);
-		return submission;
 	}
 }

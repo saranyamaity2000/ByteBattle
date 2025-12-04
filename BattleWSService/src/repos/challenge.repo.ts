@@ -4,6 +4,10 @@ import type { CreateChallengeDTO } from "../types/challenge.type.js";
 class ChallengeRepo {
 	constructor() {}
 
+	async setWinner(challengeId: string, winner: string): Promise<IChallenge | null> {
+		return ChallengeModel.findOneAndUpdate({ challengeId }, { winner }, { new: true }).exec();
+	}
+
 	async getOngoingChallenges(userEmail: string): Promise<IChallenge[]> {
 		const challenges = await ChallengeModel.find({
 			$and: [
@@ -60,6 +64,10 @@ class ChallengeRepo {
 	async createChallenge(challengeData: CreateChallengeDTO): Promise<IChallenge> {
 		const challenge = await ChallengeModel.create(challengeData);
 		return challenge;
+	}
+
+	async getChallengeById(challengeId: string): Promise<IChallenge | null> {
+		return ChallengeModel.findOne({ challengeId }).exec();
 	}
 }
 

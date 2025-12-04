@@ -25,6 +25,26 @@ class ChallengeController {
 			data: challenges,
 		});
 	}
+
+	async handleChallengeCallback(req: Request, res: Response) {
+		const { eventName, eventData } = req.body;
+		if (eventName !== "submissionSuccess") {
+			return res.status(400).json({ error: "Unsupported event" });
+		} else {
+			if (!eventData || !eventData.challengeId || !eventData.successfulSubmissionBy) {
+				return res.status(400).json({ error: "Invalid event data" });
+			}
+			try {
+				await challengeService.processSuccessfulChallengeSubmission(
+					eventData.challengeId,
+					eventData.successfulSubmissionBy
+				);
+				return res.status(200).json({ success: true });
+			} catch (error) {
+				return res.status(500).json({ error: "Failed to process event" });
+			}
+		}
+	}
 }
 
 const challengeController = new ChallengeController();

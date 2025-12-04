@@ -16,8 +16,8 @@ import {
 } from "../services/submissionService";
 
 export default function Problem() {
-	const { problemId } = useParams<{ problemId: string }>();
-	const { problem, isLoading, error } = useProblem(problemId);
+	const { problemSlug } = useParams<{ problemSlug: string }>();
+	const { problem, isLoading, error } = useProblem(problemSlug);
 
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [isRunning, setIsRunning] = useState(false);
@@ -57,7 +57,7 @@ export default function Problem() {
 
 	const handleSubmit = useCallback(
 		async (code: string, language: string) => {
-			if (!problemId) {
+			if (!problemSlug) {
 				console.error("Problem ID is missing");
 				return;
 			}
@@ -68,7 +68,7 @@ export default function Problem() {
 
 				// Submit code to backend
 				const submission = await submissionService.submitCode({
-					problemId,
+					problemId: problemSlug,
 					lang: mapLanguage(language),
 					code,
 				});
@@ -104,7 +104,7 @@ export default function Problem() {
 				setIsSubmitting(false);
 			}
 		},
-		[problemId]
+		[problemSlug]
 	);
 
 	const handleCloseResult = useCallback(() => {

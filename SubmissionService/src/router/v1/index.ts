@@ -8,6 +8,7 @@ import SubmissionPublisherService from "../../services/submission.publisher.serv
 import { connectToRabbitMQ } from "../../configs/rabitmq.config";
 import { ProblemClient } from "../../clients/problem.client";
 import { envConfig } from "../../configs";
+import { ChallengeClient } from "../../clients/challenge.client";
 
 export async function v1Routes(fastify: FastifyInstance) {
 	fastify.get("/api/v1/health", async (_request, reply) => {
@@ -28,7 +29,8 @@ export async function v1Routes(fastify: FastifyInstance) {
 					fastify.log,
 					new MessagingQueueService(await connectToRabbitMQ(fastify))
 				),
-				new ProblemClient(fastify.log, envConfig.PROBLEM_SERVICE_URL)
+				new ProblemClient(fastify.log, envConfig.PROBLEM_SERVICE_URL),
+                new ChallengeClient(fastify.log, envConfig.CHALLENGE_SERVICE_URL)
 			)
 		),
 	});

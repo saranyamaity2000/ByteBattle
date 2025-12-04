@@ -41,7 +41,7 @@ export async function submissionRoutes(fastify: FastifyInstance, options: Submis
 		}
 	);
 
-	// Update a specific submission status and result (requires authentication)
+	// Update a specific submission status and result (requires internal access authentication)
 	fastify.patch<{
 		Params: GetSubmissionParams;
 		Body: UpdateSubmissionStatusRequestDTO;

@@ -13,6 +13,7 @@ export interface EnvConfig {
 	SUPABASE_API_KEY: string;
 	PROBLEM_SERVICE_URL: string;
 	X_API_KEY: string;
+	CHALLENGE_SERVICE_URL: string;
 }
 
 export const envConfig: EnvConfig = {
@@ -25,6 +26,7 @@ export const envConfig: EnvConfig = {
 	SUPABASE_API_KEY: process.env.SUPABASE_API_KEY || "",
 	PROBLEM_SERVICE_URL: process.env.PROBLEM_SERVICE_URL || "http://localhost:3001",
 	X_API_KEY: process.env.X_API_KEY || "",
+	CHALLENGE_SERVICE_URL: process.env.CHALLENGE_SERVICE_URL || "http://localhost:3101",
 };
 
 export const constantConfig = {

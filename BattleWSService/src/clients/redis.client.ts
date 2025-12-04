@@ -1,4 +1,4 @@
-import { Redis, type Callback, type RedisOptions } from "ioredis";
+import { Redis, type RedisOptions } from "ioredis";
 import { serverConfig } from "../config/server.config.js";
 
 class RedisClient {
@@ -13,7 +13,6 @@ class RedisClient {
 		};
 		this._publisher = new Redis(redisConfig);
 		this._subscriber = new Redis(redisConfig);
-
 		// Add error handlers to prevent unhandled error warnings
 		this._publisher.on("error", (err) => {
 			console.error("Redis Publisher Error:", err);

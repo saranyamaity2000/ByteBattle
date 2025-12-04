@@ -140,7 +140,7 @@ export default function ModifyProblem() {
 
 			try {
 				setLoading(true);
-				const data = await problemService.getProblemById(problemSlug);
+				const data = await problemService.getProblemBySlug(problemSlug);
 				if (data) {
 					setProblem(data);
 					// Initialize form data
@@ -308,7 +308,7 @@ export default function ModifyProblem() {
 			setSuccessMessage("Testcase uploaded successfully!");
 
 			// Refresh problem data to update testcase status
-			const updatedProblem = await problemService.getProblemById(problemSlug);
+			const updatedProblem = await problemService.getProblemBySlug(problemSlug);
 			if (updatedProblem) {
 				setProblem(updatedProblem);
 			}

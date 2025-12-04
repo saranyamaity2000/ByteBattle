@@ -46,13 +46,13 @@ interface UseProblemResult {
 	error: string | null;
 }
 
-export const useProblem = (id: string | undefined): UseProblemResult => {
+export const useProblem = (slug: string | undefined): UseProblemResult => {
 	const [problem, setProblem] = useState<Problem | null>(null);
 	const [isLoading, setIsLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
 
 	useEffect(() => {
-		if (!id) {
+		if (!slug) {
 			setProblem(null);
 			setIsLoading(false);
 			return;
@@ -62,7 +62,7 @@ export const useProblem = (id: string | undefined): UseProblemResult => {
 			try {
 				setIsLoading(true);
 				setError(null);
-				const apiProblem = await problemService.getProblemById(id);
+				const apiProblem = await problemService.getProblemBySlug(slug);
 				if (apiProblem) {
 					setProblem(transformApiProblem(apiProblem));
 				} else {
@@ -78,7 +78,7 @@ export const useProblem = (id: string | undefined): UseProblemResult => {
 		};
 
 		fetchProblem();
-	}, [id]);
+	}, [slug]);
 
 	return {
 		problem,

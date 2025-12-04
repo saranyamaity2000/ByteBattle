@@ -144,16 +144,16 @@ class ProblemService {
 		}
 	}
 
-	async getProblemById(id: string): Promise<ApiProblem | null> {
+	async getProblemBySlug(slug: string): Promise<ApiProblem | null> {
 		try {
-			const response = await apiClient.get<ApiResponse<ApiProblem>>(`/problems/${id}`);
+			const response = await apiClient.get<ApiResponse<ApiProblem>>(`/problems/${slug}`);
 			return response.data.data;
 		} catch (error) {
 			if (axios.isAxiosError(error) && error.response?.status === 404) {
 				return null; // Problem not found
 			}
 			console.error("Error fetching problem by ID:", error);
-			throw new Error(`Failed to fetch problem with ID: ${id}`);
+			throw new Error(`Failed to fetch problem with ID: ${slug}`);
 		}
 	}
 

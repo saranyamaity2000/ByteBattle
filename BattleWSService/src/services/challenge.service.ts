@@ -4,9 +4,20 @@ import { Utils } from "../utilities/util.js";
 import { Redis } from "ioredis";
 import { redisClient } from "../clients/redis.client.js";
 import challengeRepo from "../repos/challenge.repo.js";
+import { Redlock } from "@sesamecare-oss/redlock";
 
 class ChallengeService {
-	constructor(private readonly rc: Redis) {}
+	private readonly redlock: Redlock;
+
+	constructor(private readonly rc: Redis) {
+		this.redlock = new Redlock([rc], {
+			driftFactor: 0.01,
+			retryCount: 3,
+			retryDelay: 200,
+			retryJitter: 200,
+			automaticExtensionThreshold: 500,
+		});
+	}
 	async storeChallengeReq(challengeId: string, challengeData: BasicChallengeInfo): Promise<void> {
 		await this.rc.set(`challengeReq:${challengeId}`, JSON.stringify(challengeData));
 	}
@@ -35,6 +46,49 @@ class ChallengeService {
 	async createChallenge(createChallengeDTO: CreateChallengeDTO): Promise<IChallenge> {
 		const challenge = await challengeRepo.createChallenge(createChallengeDTO);
 		return challenge;
+	}
+
+	async processSuccessfulChallengeSubmission(
+		challengeId: string,
+		successfulSubmissionBy: string
+	): Promise<void> {
+		const lockKey = `lock:challenge:${challengeId}`;
+		const lockTTL = 5000; // 5 seconds lock TTL // TODO configurable
+
+		let lock;
+		try {
+			lock = await this.redlock.acquire([lockKey], lockTTL);
+
+			const challenge = await challengeRepo.getChallengeById(challengeId);
+			if (!challenge) {
+				throw new Error("Challenge not found");
+			}
+
+			if (challenge.winner) {
+				return;
+			}
+
+			const challengeEndTime = new Date(
+				challenge.createdAt.getTime() + challenge.timeLimitInMin * 60 * 1000
+			);
+			const now = new Date();
+
+			if (now > challengeEndTime) {
+				return;
+			}
+
+			const updatedChallenge = await challengeRepo.setWinner(
+				challengeId,
+				successfulSubmissionBy
+			);
+			if (!updatedChallenge) {
+				throw new Error("Failed to update challenge winner");
+			}
+		} finally {
+			if (lock) {
+				await lock.release();
+			}
+		}
 	}
 }
 

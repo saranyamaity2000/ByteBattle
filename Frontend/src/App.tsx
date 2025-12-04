@@ -29,7 +29,7 @@ function AppContent() {
 				<Routes>
 					<Route path="/" element={<Home />} />
 					<Route path="/problems" element={<Problems />} />
-					<Route path="/problem/:problemId" element={<Problem />} />
+					<Route path="/problem/:problemSlug" element={<Problem />} />
 					<Route path="/craft-problem" element={<CraftProblem />} />
 					<Route path="/problem/modify/:problemSlug" element={<ModifyProblem />} />
 					<Route path="/battle" element={<BattlePage />} />
