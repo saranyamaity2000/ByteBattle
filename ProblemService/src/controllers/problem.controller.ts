@@ -105,7 +105,7 @@ class ProblemController {
 		_next: NextFunction
 	): Promise<void> => {
 		logger.info("Fetching random published problem ID");
-		const difficulty = req.query.difficulty as ProblemDifficulty;
+		const difficulty = req.query.difficulty as ProblemDifficulty | undefined;
 		// Validate difficulty if provided
 		if (difficulty && !Object.values(ProblemDifficulty).includes(difficulty)) {
 			res.status(400).json({ error: "Invalid difficulty value" });
