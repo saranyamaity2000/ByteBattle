@@ -1,5 +1,6 @@
 import { ProblemCreationDTO } from "../dtos/problem.dto";
 import ProblemModel, { ProblemDifficulty, IProblem } from "../models/problem.model";
+import { FilterQuery } from "mongoose";
 
 export class ProblemRepository {
 	async createProblem(data: ProblemCreationDTO): Promise<IProblem> {
@@ -43,13 +44,11 @@ export class ProblemRepository {
 		offset: number,
 		filter: { difficulty?: ProblemDifficulty }
 	): Promise<string | null> {
-		const problem = await ProblemModel.findOne({
+		const query: FilterQuery<IProblem> = {
 			isPublished: true,
-			difficulty: filter.difficulty,
-		})
-			.skip(offset)
-			.select("_id")
-			.exec();
+			...(filter.difficulty && { difficulty: filter.difficulty }),
+		};
+		const problem = await ProblemModel.findOne(query).skip(offset).select("_id").exec();
 		return problem ? problem.id.toString() : null;
 	}
 }
