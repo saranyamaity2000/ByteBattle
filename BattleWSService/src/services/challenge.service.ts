@@ -4,7 +4,7 @@ import { Utils } from "../utilities/util.js";
 import { Redis } from "ioredis";
 import { redisClient } from "../clients/redis.client.js";
 import challengeRepo from "../repos/challenge.repo.js";
-import { Redlock } from "@sesamecare-oss/redlock";
+import { Lock, Redlock } from "@sesamecare-oss/redlock";
 
 class ChallengeService {
 	private readonly redlock: Redlock;
@@ -60,7 +60,7 @@ class ChallengeService {
 		const lockKey = `lock:challenge:${challengeId}`;
 		const lockTTL = 5000; // 5 seconds lock TTL // TODO configurable
 
-		let lock;
+		let lock: Lock | null = null;
 		try {
 			lock = await this.redlock.acquire([lockKey], lockTTL);
 
