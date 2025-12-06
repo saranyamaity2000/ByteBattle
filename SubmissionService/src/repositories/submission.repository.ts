@@ -14,28 +14,10 @@ export class SubmissionRepository {
 
 	async updateById(
 		id: string,
-		updateData: UpdateSubmissionStatusRequestDTO,
-		session?: ClientSession
+		updateData: UpdateSubmissionStatusRequestDTO
 	): Promise<ISubmission | null> {
 		return SubmissionModel.findByIdAndUpdate(id, updateData, {
-			session: session ?? null,
 			new: true,
 		}).exec();
-	}
-
-	async startTransaction(): Promise<ClientSession> {
-		const session = await mongoose.startSession();
-		session.startTransaction();
-		return session;
-	}
-
-	async commitTransaction(session: ClientSession): Promise<void> {
-		await session.commitTransaction();
-		session.endSession();
-	}
-
-	async abortTransaction(session: ClientSession): Promise<void> {
-		await session.abortTransaction();
-		session.endSession();
 	}
 }
