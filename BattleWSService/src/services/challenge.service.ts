@@ -48,10 +48,15 @@ class ChallengeService {
 		return challenge;
 	}
 
+	async getChallengeById(challengeId: string): Promise<IChallenge | null> {
+		return await challengeRepo.getChallengeById(challengeId);
+	}
+
 	async processSuccessfulChallengeSubmission(
 		challengeId: string,
 		successfulSubmissionBy: string
 	): Promise<void> {
+		console.log("aquiring lock for challenge:", challengeId);
 		const lockKey = `lock:challenge:${challengeId}`;
 		const lockTTL = 5000; // 5 seconds lock TTL // TODO configurable
 
@@ -86,6 +91,7 @@ class ChallengeService {
 			}
 		} finally {
 			if (lock) {
+				console.log("releasing lock for challenge:", challengeId);
 				await lock.release();
 			}
 		}

@@ -24,6 +24,10 @@ export const createSubmissionSchema: FastifySchema["body"] = {
 			minLength: 1,
 			pattern: "^[a-zA-Z0-9_-]+$", // Only allow valid string IDs
 		},
+		challengeId: {
+			type: "string",
+			minLength: 1,
+		},
 	},
 	additionalProperties: false,
 } as const;
