@@ -32,6 +32,7 @@ export interface CreateSubmissionPayload {
 	problemId: string;
 	lang: SupportedLanguage;
 	code: string;
+	challengeId?: string; // Optional: Include when submission is part of a challenge
 }
 
 export enum VerdictEnum {
@@ -62,6 +63,7 @@ export interface Submission {
 	userId: string;
 	status: "pending" | "processing" | "completed" | "failed";
 	result?: SubmissionResult;
+	challengeId?: string; // Optional: Present when submission is part of a challenge
 	createdAt: string;
 	updatedAt: string;
 }

@@ -171,7 +171,7 @@ export default function Problems() {
 									</div>
 									<div className="flex-1">
 										{problem.isPublished ? (
-											<Link to={`/problem/${problem.id}`} className="block">
+											<Link to={`/problem/${problem.slug}`} className="block">
 												<h3 className="text-xl font-semibold text-gray-900 mb-2 hover:text-blue-600 transition-colors">
 													{problem.title}
 												</h3>
@@ -194,7 +194,7 @@ export default function Problems() {
 
 								<div className="flex items-center gap-3">
 									<Link
-										to={`/problem/modify/${problem.id}`}
+										to={`/problem/modify/${problem.slug}`}
 										className="p-2 rounded-full hover:bg-gray-100 transition-colors"
 										title="Modify Problem"
 										onClick={(e) => e.stopPropagation()}

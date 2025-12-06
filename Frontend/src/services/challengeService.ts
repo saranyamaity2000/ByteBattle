@@ -40,6 +40,7 @@ export interface ApiChallenge {
 export interface ChallengeService {
 	getOnGoingChallenges(): Promise<ApiChallenge[]>;
 	getPastChallenges(): Promise<ApiChallenge[]>;
+	getChallengeById(challengeId: string): Promise<ApiChallenge | null>;
 }
 
 class ChallengeServiceImpl implements ChallengeService {
@@ -61,6 +62,22 @@ class ChallengeServiceImpl implements ChallengeService {
 			throw new Error("Failed to fetch past challenges");
 		}
 		return response.data.data;
+	}
+
+	async getChallengeById(challengeId: string): Promise<ApiChallenge | null> {
+		try {
+			const response = await apiClient.get<
+				{ success: true; data: ApiChallenge } | { success: false; error: string }
+			>(`/challenges/${challengeId}`);
+			if (!response.data.success) {
+				console.error("Failed to fetch challenge by ID:", response.data.error);
+				return null;
+			}
+			return response.data.data;
+		} catch (error) {
+			console.error("Error fetching challenge by ID:", error);
+			return null;
+		}
 	}
 }
 
