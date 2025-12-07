@@ -1,5 +1,6 @@
 import { createClient, type SupabaseClient, type User } from "@supabase/supabase-js";
 import { type Request, type Response, type NextFunction } from "express";
+import { serverConfig } from "../config/server.config.js";
 
 // Extend Express Request type to include user
 declare global {
@@ -134,7 +135,7 @@ export async function verifyInternalAccess(
 ): Promise<void> {
 	try {
 		const xApiKey = req.headers["x-api-key"];
-		if (!xApiKey || xApiKey !== process.env.X_API_KEY) {
+		if (!xApiKey || xApiKey !== serverConfig.X_API_KEY) {
 			res.status(403).json({
 				error: "Forbidden",
 				message: "No Access",
