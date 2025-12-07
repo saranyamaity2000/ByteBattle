@@ -1,5 +1,5 @@
 import "dotenv/config";
-import { getXApiKey } from "../utilities/env.utils";
+import { getXApiKey } from "../utilities/env.utils.js";
 
 export interface ServerConfig {
 	PORT: number;
