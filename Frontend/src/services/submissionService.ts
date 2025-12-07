@@ -1,10 +1,11 @@
 import axios from "axios";
+import { config } from "@/config/config";
 import { authInjectionInterceptor } from "./interceptors/authIntercepter";
 
 // Create axios instance for submission service
 const submissionApiClient = axios.create({
-	baseURL: import.meta.env.VITE_SUBMISSION_SERVICE_URL || "http://localhost:3002/api/v1",
-	timeout: 30000, // 30 seconds timeout for code execution
+	baseURL: config.submissionServiceApi.baseUrl,
+	timeout: config.submissionServiceApi.timeout,
 	headers: {
 		"Content-Type": "application/json",
 	},
