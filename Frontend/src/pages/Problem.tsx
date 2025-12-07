@@ -1,5 +1,5 @@
-import { useState, useCallback } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useState, useCallback, useEffect } from "react";
+import { useParams, useSearchParams, Link, useNavigate } from "react-router-dom";
 import { useProblem } from "../hooks/useProblems";
 import ResizablePane from "../components/ResizablePane";
 import LightCodeEditor from "../components/LightCodeEditor";
@@ -14,15 +14,40 @@ import {
 	type SubmissionResult,
 	type SupportedLanguage,
 } from "../services/submissionService";
-
+import { challengeService } from "../services/challengeService";
+import { usePageLoaderContext } from "@/hooks/context-hooks/usePageLoaderContext";
 export default function Problem() {
 	const { problemSlug } = useParams<{ problemSlug: string }>();
+	const [searchParams] = useSearchParams();
+	const navigate = useNavigate();
+	const challengeId = searchParams.get("challengeId"); // Get challengeId from URL if present
 	const { problem, isLoading, error } = useProblem(problemSlug);
 
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [isRunning, setIsRunning] = useState(false);
 	const [evaluationResult, setEvaluationResult] = useState<SubmissionResult | null>(null);
 	const [showResult, setShowResult] = useState(false);
+	const { setIsPageLoading } = usePageLoaderContext();
+
+	useEffect(() => {
+		const validateChallenge = async () => {
+			if (!challengeId || !problem) return;
+			try {
+				setIsPageLoading(true);
+				const challenge = await challengeService.getChallengeById(challengeId);
+				if (challenge?.problemId !== problem.id) {
+					navigate(`/problem/${problemSlug}`, { replace: true }); // completely replace history
+				}
+			} catch (err) {
+				console.error("Failed to validate challenge:", err);
+				navigate(`/problem/${problemSlug}`, { replace: true });
+			} finally {
+				setIsPageLoading(false);
+			}
+		};
+
+		validateChallenge();
+	}, [challengeId, problem, problemSlug, navigate, setIsPageLoading]);
 
 	// Map language to backend format
 	const mapLanguage = (lang: string): SupportedLanguage => {
@@ -71,6 +96,7 @@ export default function Problem() {
 					problemId: problemSlug,
 					lang: mapLanguage(language),
 					code,
+					...(challengeId && { challengeId }), // Include challengeId if present
 				});
 
 				console.log("Submission created:", submission.id);
@@ -104,7 +130,7 @@ export default function Problem() {
 				setIsSubmitting(false);
 			}
 		},
-		[problemSlug]
+		[problemSlug, challengeId]
 	);
 
 	const handleCloseResult = useCallback(() => {

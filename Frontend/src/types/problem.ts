@@ -1,7 +1,8 @@
 import type { ApiProblem } from "../services/problemService";
 
 export interface Problem {
-	id: string;
+	id: string; // MongoDB _id
+	slug: string; // URL-friendly identifier
 	title: string;
 	difficulty: "Easy" | "Medium" | "Hard";
 	category: string;
@@ -33,7 +34,8 @@ export const transformApiProblem = (apiProblem: ApiProblem): Problem => {
 	const category = apiProblem.topicTags?.[0] || "General";
 
 	return {
-		id: apiProblem.slug, // Use slug as ID for routing
+		id: apiProblem._id, // MongoDB _id
+		slug: apiProblem.slug, // URL-friendly identifier
 		title: apiProblem.title,
 		difficulty: normalizeDifficulty(apiProblem.difficulty),
 		category,

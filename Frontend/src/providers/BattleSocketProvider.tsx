@@ -61,7 +61,8 @@ export const BattleSocketProvider = (props: PropsWithChildren) => {
 			problemService
 				.getProblemSlugById(data.problemId)
 				.then((slug) => {
-					window.location.href = `/problem/${slug}`; // navigate to the problem page (useNavigate not working here)
+					// Navigate directly to problem with challengeId as query param
+					window.location.href = `/problem/${slug}?challengeId=${data.challengeId}`;
 				})
 				.catch((err) => {
 					console.error("Failed to get problem slug:", err);
