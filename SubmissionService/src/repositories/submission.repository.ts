@@ -1,6 +1,5 @@
 import { ISubmission, SubmissionModel } from "../models/submission.model";
 import { UpdateSubmissionStatusRequestDTO } from "../dtos/submission.dto";
-import mongoose, { ClientSession } from "mongoose";
 
 export class SubmissionRepository {
 	async createSubmission(submissionData: Partial<ISubmission>): Promise<ISubmission> {
