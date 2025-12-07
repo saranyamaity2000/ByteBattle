@@ -7,7 +7,7 @@ export function getXApiKey(): string {
 	const xApiKey = process.env.X_API_KEY;
 	
 	if (!xApiKey || !xApiKey.trim()) {
-		throw new Error("X_API_KEY environment variable must be set and non-empty");
+		throw new Error("X_API_KEY environment variable must be set and cannot be empty or contain only whitespace");
 	}
 	
 	return xApiKey;
