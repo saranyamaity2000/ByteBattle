@@ -9,7 +9,7 @@ export class ChallengeClient {
 	constructor(private readonly logger: FastifyBaseLogger, private readonly baseURL: string) {
 		this.httpClient = axios.create({
 			baseURL: this.baseURL,
-			timeout: 10000, // 10 seconds timeout
+			timeout: 100000, // 100 seconds timeout
 			headers: {
 				"Content-Type": "application/json",
 				"X-Api-Key": envConfig.X_API_KEY,
@@ -56,10 +56,12 @@ export class ChallengeClient {
 	): Promise<void> {
 		// TODO better specific error handling
 		try {
-			const response = await this.httpClient.post(`/api/v1/challenges/callback}`, {
+			const response = await this.httpClient.post(`/api/v1/challenges/callback`, {
 				eventName: "submissionSuccess",
-				challengeId,
-				successfulSubmissionBy,
+				eventData: {
+					challengeId,
+					successfulSubmissionBy,
+				},
 			});
 			if (response.status !== 200) {
 				throw new InternalServerError(

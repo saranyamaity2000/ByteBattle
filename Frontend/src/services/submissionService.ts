@@ -1,10 +1,11 @@
 import axios from "axios";
+import { config } from "@/config/config";
 import { authInjectionInterceptor } from "./interceptors/authIntercepter";
 
 // Create axios instance for submission service
 const submissionApiClient = axios.create({
-	baseURL: import.meta.env.VITE_SUBMISSION_SERVICE_URL || "http://localhost:3002/api/v1",
-	timeout: 30000, // 30 seconds timeout for code execution
+	baseURL: config.submissionServiceApi.baseUrl,
+	timeout: config.submissionServiceApi.timeout,
 	headers: {
 		"Content-Type": "application/json",
 	},
@@ -36,14 +37,24 @@ export interface CreateSubmissionPayload {
 }
 
 export enum VerdictEnum {
-	Accepted = "accepted",
-	WrongAnswer = "wrong answer",
-	TimeLimitExceeded = "time limit exceeded",
-	MemoryLimitExceeded = "memory limit exceeded",
-	RuntimeError = "runtime error",
-	CompileError = "compilation error",
-	FailedToSubmit = "failed to submit",
+	Accepted = "ACCEPTED",
+	WrongAnswer = "WRONG_ANSWER",
+	TimeLimitExceeded = "TIME_LIMIT_EXCEEDED",
+	MemoryLimitExceeded = "MEMORY_LIMIT_EXCEEDED",
+	RuntimeError = "RUNTIME_ERROR",
+	CompileError = "COMPILATION_ERROR",
+	FailedToSubmit = "FAILED_TO_SUBMIT",
 }
+
+export const VERDICT_LABELS: Record<VerdictEnum, string> = {
+	[VerdictEnum.Accepted]: "Accepted",
+	[VerdictEnum.WrongAnswer]: "Wrong Answer",
+	[VerdictEnum.TimeLimitExceeded]: "Time Limit Exceeded",
+	[VerdictEnum.MemoryLimitExceeded]: "Memory Limit Exceeded",
+	[VerdictEnum.RuntimeError]: "Runtime Error",
+	[VerdictEnum.CompileError]: "Compilation Error",
+	[VerdictEnum.FailedToSubmit]: "Failed to submit",
+};
 
 export interface SubmissionResult {
 	verdict: VerdictEnum | string;

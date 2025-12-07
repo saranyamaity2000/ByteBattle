@@ -1,13 +1,13 @@
 import axios from "axios";
+import { config } from "@/config/config";
 import { authInjectionInterceptor } from "./interceptors/authIntercepter";
 
 const apiClient = axios.create({
-	baseURL: import.meta.env.VITE_CHALLENGE_SERVICE_URL,
-	timeout: 10000,
+	baseURL: config.challengeServiceApi.baseUrl,
+	timeout: config.challengeServiceApi.timeout,
 	headers: {
 		"Content-Type": "application/json",
 	},
-	withCredentials: true,
 });
 
 // Add request interceptor for logging and authentication

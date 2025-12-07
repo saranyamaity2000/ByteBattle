@@ -47,12 +47,12 @@ const (
 type Verdict string
 
 const (
-	VerdictAccepted            Verdict = "accepted"
-	VerdictWrongAnswer         Verdict = "wrong answer"
-	VerdictTimeLimitExceeded   Verdict = "time limit exceeded"
-	VerdictMemoryLimitExceeded Verdict = "memory limit exceeped"
-	VerdictRuntimeError        Verdict = "runtime error"
-	VerdictCompilationError    Verdict = "compilation error"
+	VerdictAccepted            Verdict = "ACCEPTED"
+	VerdictWrongAnswer         Verdict = "WRONG_ANSWER"
+	VerdictTimeLimitExceeded   Verdict = "TIME_LIMIT_EXCEEDED"
+	VerdictMemoryLimitExceeded Verdict = "MEMORY_LIMIT_EXCEEDED"
+	VerdictRuntimeError        Verdict = "RUNTIME_ERROR"
+	VerdictCompilationError    Verdict = "COMPILATION_ERROR"
 )
 
 type SubmissionResult struct {

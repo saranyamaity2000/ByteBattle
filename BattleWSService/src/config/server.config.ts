@@ -1,4 +1,5 @@
 import "dotenv/config";
+import { getXApiKey } from "../utilities/env.utils.js";
 
 export interface ServerConfig {
 	PORT: number;
@@ -13,6 +14,7 @@ export interface ServerConfig {
 	PROBLEM_SERVICE_URL: string;
 	APP_NAME: string;
 	ALLOWED_ORIGINS: string[];
+	X_API_KEY: string;
 }
 
 export const serverConfig: ServerConfig = {
@@ -30,4 +32,5 @@ export const serverConfig: ServerConfig = {
 	ALLOWED_ORIGINS: process.env.ALLOWED_ORIGINS
 		? process.env.ALLOWED_ORIGINS.split(",")
 		: ["http://localhost:5173"],
+	X_API_KEY: getXApiKey(),
 };
