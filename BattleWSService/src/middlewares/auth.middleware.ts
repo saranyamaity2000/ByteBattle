@@ -55,6 +55,7 @@ export async function verifySupabaseToken(
 		// Extract token from Authorization header
 		const authHeader = req.headers.authorization;
 		if (!authHeader || !authHeader.startsWith("Bearer ")) {
+			console.error("Missing or invalid authorization header");
 			res.status(401).json({
 				error: "Unauthorized",
 				message: "Missing or invalid authorization header",
@@ -72,6 +73,7 @@ export async function verifySupabaseToken(
 		} = await supabase.auth.getUser(token);
 
 		if (error || !user) {
+			console.log("Token verification failed:", error);
 			res.status(401).json({
 				error: "Unauthorized",
 				message: "Invalid or expired token",
@@ -122,5 +124,29 @@ export async function optionalSupabaseAuth(
 		// Don't fail the request, just log the error
 		console.error("Optional auth error:", error);
 		next();
+	}
+}
+
+export async function verifyInternalAccess(
+	req: Request,
+	res: Response,
+	next: NextFunction
+): Promise<void> {
+	try {
+		const xApiKey = req.headers["x-api-key"];
+		if (!xApiKey || xApiKey !== process.env.X_API_KEY) {
+			res.status(403).json({
+				error: "Forbidden",
+				message: "No Access",
+			});
+			return;
+		}
+		next();
+	} catch (error) {
+		console.error("Internal access verification error:", error);
+		res.status(500).json({
+			error: "Internal Server Error",
+			message: "Failed to verify internal access",
+		});
 	}
 }

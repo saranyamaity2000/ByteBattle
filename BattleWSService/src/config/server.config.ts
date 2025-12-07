@@ -13,6 +13,7 @@ export interface ServerConfig {
 	PROBLEM_SERVICE_URL: string;
 	APP_NAME: string;
 	ALLOWED_ORIGINS: string[];
+	X_API_KEY: string;
 }
 
 export const serverConfig: ServerConfig = {
@@ -30,4 +31,5 @@ export const serverConfig: ServerConfig = {
 	ALLOWED_ORIGINS: process.env.ALLOWED_ORIGINS
 		? process.env.ALLOWED_ORIGINS.split(",")
 		: ["http://localhost:5173"],
+	X_API_KEY: process.env.X_API_KEY ?? "default_internal_api_key",
 };
