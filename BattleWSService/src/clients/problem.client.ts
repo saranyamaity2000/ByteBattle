@@ -7,7 +7,7 @@ class ProblemClient {
 	constructor(private readonly problemServiceUrl: string) {
 		this.httpClient = axios.create({
 			baseURL: problemServiceUrl,
-			timeout: 10000, // 10 seconds timeout // TODO make it configurable
+			timeout: 100000, // 100 seconds timeout // TODO make it configurable
 			headers: {
 				"Content-Type": "application/json",
 			},
