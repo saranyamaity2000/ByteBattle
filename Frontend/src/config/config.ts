@@ -32,12 +32,12 @@ const getTimeout = (): number => {
 
 export const config: AppConfig = {
 	problemServiceApi: {
-		baseUrl: getServiceUrl("VITE_PROBLEM_SERVICE_URL", "http://localhost:3001/api/v1"),
+		baseUrl: getServiceUrl("VITE_PROBLEM_SERVICE_URL", "http://localhost:3000/api/v1"),
 		timeout: getTimeout(),
 		withCredentials: true,
 	},
 	submissionServiceApi: {
-		baseUrl: getServiceUrl("VITE_SUBMISSION_SERVICE_URL", "http://localhost:3002/api/v1"),
+		baseUrl: getServiceUrl("VITE_SUBMISSION_SERVICE_URL", "http://localhost:3001/api/v1"),
 		timeout: getTimeout(),
 		withCredentials: true,
 	},
