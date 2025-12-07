@@ -1,4 +1,5 @@
 import "dotenv/config";
+import { getXApiKey } from "../utilities/env.utils";
 
 export interface ServerConfig {
 	PORT: number;
@@ -31,5 +32,5 @@ export const serverConfig: ServerConfig = {
 	ALLOWED_ORIGINS: process.env.ALLOWED_ORIGINS
 		? process.env.ALLOWED_ORIGINS.split(",")
 		: ["http://localhost:5173"],
-	X_API_KEY: process.env.X_API_KEY ?? "default_internal_api_key",
+	X_API_KEY: getXApiKey(),
 };

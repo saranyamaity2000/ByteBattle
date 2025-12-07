@@ -1,4 +1,5 @@
 import { config } from "dotenv";
+import { getXApiKey } from "../utils/env.utils";
 
 // Load environment variables
 config();
@@ -25,7 +26,7 @@ export const envConfig: EnvConfig = {
 	SUPABASE_URL: process.env.SUPABASE_URL || "",
 	SUPABASE_API_KEY: process.env.SUPABASE_API_KEY || "",
 	PROBLEM_SERVICE_URL: process.env.PROBLEM_SERVICE_URL || "http://localhost:3001",
-	X_API_KEY: process.env.X_API_KEY || "",
+	X_API_KEY: getXApiKey(),
 	CHALLENGE_SERVICE_URL: process.env.CHALLENGE_SERVICE_URL || "http://localhost:3101",
 };
 
