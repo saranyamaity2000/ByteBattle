@@ -36,14 +36,6 @@ export interface CreateSubmissionPayload {
 	challengeId?: string; // Optional: Include when submission is part of a challenge
 }
 
-// const (
-// 	VerdictAccepted            Verdict = "ACCEPTED"
-// 	VerdictWrongAnswer         Verdict = "WRONG_ANSWER"
-// 	VerdictTimeLimitExceeded   Verdict = "TIME_LIMIT_EXCEEDED"
-// 	VerdictMemoryLimitExceeded Verdict = "MEMORY_LIMIT_EXCEEDED"
-// 	VerdictRuntimeError        Verdict = "RUNTIME_ERROR"
-// 	VerdictCompilationError    Verdict = "COMPILATION_ERROR"
-// )
 export enum VerdictEnum {
 	Accepted = "ACCEPTED",
 	WrongAnswer = "WRONG_ANSWER",
