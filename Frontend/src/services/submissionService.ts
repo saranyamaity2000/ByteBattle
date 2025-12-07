@@ -36,15 +36,33 @@ export interface CreateSubmissionPayload {
 	challengeId?: string; // Optional: Include when submission is part of a challenge
 }
 
+// const (
+// 	VerdictAccepted            Verdict = "ACCEPTED"
+// 	VerdictWrongAnswer         Verdict = "WRONG_ANSWER"
+// 	VerdictTimeLimitExceeded   Verdict = "TIME_LIMIT_EXCEEDED"
+// 	VerdictMemoryLimitExceeded Verdict = "MEMORY_LIMIT_EXCEEDED"
+// 	VerdictRuntimeError        Verdict = "RUNTIME_ERROR"
+// 	VerdictCompilationError    Verdict = "COMPILATION_ERROR"
+// )
 export enum VerdictEnum {
-	Accepted = "accepted",
-	WrongAnswer = "wrong answer",
-	TimeLimitExceeded = "time limit exceeded",
-	MemoryLimitExceeded = "memory limit exceeded",
-	RuntimeError = "runtime error",
-	CompileError = "compilation error",
-	FailedToSubmit = "failed to submit",
+	Accepted = "ACCEPTED",
+	WrongAnswer = "WRONG_ANSWER",
+	TimeLimitExceeded = "TIME_LIMIT_EXCEEDED",
+	MemoryLimitExceeded = "MEMORY_LIMIT_EXCEEDED",
+	RuntimeError = "RUNTIME_ERROR",
+	CompileError = "COMPILATION_ERROR",
+	FailedToSubmit = "FAILED_TO_SUBMIT",
 }
+
+export const VERDICT_LABELS: Record<VerdictEnum, string> = {
+	[VerdictEnum.Accepted]: "Accepted",
+	[VerdictEnum.WrongAnswer]: "Wrong Answer",
+	[VerdictEnum.TimeLimitExceeded]: "Time Limit Exceeded",
+	[VerdictEnum.MemoryLimitExceeded]: "Memory Limit Exceeded",
+	[VerdictEnum.RuntimeError]: "Runtime Error",
+	[VerdictEnum.CompileError]: "Compilation Error",
+	[VerdictEnum.FailedToSubmit]: "Failed to submit",
+};
 
 export interface SubmissionResult {
 	verdict: VerdictEnum | string;

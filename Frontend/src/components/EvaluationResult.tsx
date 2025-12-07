@@ -1,7 +1,7 @@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "./ui/dialog";
 import { Button } from "./ui/button";
 import { CheckCircle, XCircle, Clock, AlertCircle } from "lucide-react";
-import { VerdictEnum, type SubmissionResult } from "@/services/submissionService";
+import { VERDICT_LABELS, VerdictEnum, type SubmissionResult } from "@/services/submissionService";
 
 interface EvaluationResultProps {
 	isOpen: boolean;
@@ -12,8 +12,10 @@ interface EvaluationResultProps {
 export default function EvaluationResult({ isOpen, onClose, result }: EvaluationResultProps) {
 	if (!result) return null;
 
+	const verdict = result.verdict;
+
 	const getStatusIcon = () => {
-		switch (result.verdict) {
+		switch (verdict) {
 			case VerdictEnum.Accepted:
 				return <CheckCircle className="h-12 w-12 text-green-500" />;
 			case VerdictEnum.WrongAnswer:
@@ -29,7 +31,7 @@ export default function EvaluationResult({ isOpen, onClose, result }: Evaluation
 	};
 
 	const getStatusColor = () => {
-		switch (result.verdict) {
+		switch (verdict) {
 			case VerdictEnum.Accepted:
 				return "text-green-600";
 			case VerdictEnum.WrongAnswer:
@@ -45,6 +47,9 @@ export default function EvaluationResult({ isOpen, onClose, result }: Evaluation
 	};
 
 	const getStatusTitle = () => {
+		if (verdict in VERDICT_LABELS) {
+			return VERDICT_LABELS[verdict as VerdictEnum];
+		}
 		return result.verdict;
 	};
 
