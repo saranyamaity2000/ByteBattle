@@ -4,7 +4,7 @@ import { Utils } from "../utilities/util.js";
 import { Redis } from "ioredis";
 import { redisClient } from "../clients/redis.client.js";
 import challengeRepo from "../repos/challenge.repo.js";
-import { Redlock } from "@sesamecare-oss/redlock";
+import { Lock, Redlock } from "@sesamecare-oss/redlock";
 
 class ChallengeService {
 	private readonly redlock: Redlock;
@@ -48,14 +48,19 @@ class ChallengeService {
 		return challenge;
 	}
 
+	async getChallengeById(challengeId: string): Promise<IChallenge | null> {
+		return await challengeRepo.getChallengeById(challengeId);
+	}
+
 	async processSuccessfulChallengeSubmission(
 		challengeId: string,
 		successfulSubmissionBy: string
 	): Promise<void> {
+		console.log("aquiring lock for challenge:", challengeId);
 		const lockKey = `lock:challenge:${challengeId}`;
 		const lockTTL = 5000; // 5 seconds lock TTL // TODO configurable
 
-		let lock;
+		let lock: Lock | null = null;
 		try {
 			lock = await this.redlock.acquire([lockKey], lockTTL);
 
@@ -86,6 +91,7 @@ class ChallengeService {
 			}
 		} finally {
 			if (lock) {
+				console.log("releasing lock for challenge:", challengeId);
 				await lock.release();
 			}
 		}
