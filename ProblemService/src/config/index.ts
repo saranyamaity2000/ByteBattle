@@ -10,6 +10,7 @@ type ServerConfig = {
 		ACCESS_KEY_SECRET: string;
 		REGION: string;
 		BUCKET_NAME: string;
+		S3_ENDPOINT?: string;
 	};
 	SUPABASE: {
 		URL: string;
@@ -35,6 +36,7 @@ export const serverConfig: ServerConfig = {
 		ACCESS_KEY_SECRET: process.env.AWS_ACCESS_KEY_SECRET || "N/A",
 		REGION: process.env.AWS_REGION || "N/A",
 		BUCKET_NAME: process.env.AWS_BUCKET_NAME || "N/A",
+		S3_ENDPOINT: process.env.AWS_S3_ENDPOINT,
 	},
 	SUPABASE: {
 		URL: process.env.SUPABASE_URL || "N/A",

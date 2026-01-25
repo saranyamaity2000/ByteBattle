@@ -32,7 +32,7 @@ app.use(
 		origin: serverConfig.ALLOWED_ORIGINS,
 		credentials: true,
 		allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"], // without explicit mentioning header, will get CORs error
-	})
+	}),
 );
 app.use(express.json());
 app.use("/api/v1", v1Router);
@@ -57,7 +57,7 @@ io.use(async (socket, next) => {
 			error,
 		} = await createClient(
 			serverConfig.SUPABASE_URL,
-			serverConfig.SUPABASE_API_KEY
+			serverConfig.SUPABASE_API_KEY,
 		).auth.getUser(token);
 		if (!user || error) {
 			return next(new Error("Authentication error"));

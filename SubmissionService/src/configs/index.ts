@@ -15,6 +15,7 @@ export interface EnvConfig {
 	PROBLEM_SERVICE_URL: string;
 	X_API_KEY: string;
 	CHALLENGE_SERVICE_URL: string;
+	ALLOWED_ORIGINS: string[];
 }
 
 export const envConfig: EnvConfig = {
@@ -28,6 +29,9 @@ export const envConfig: EnvConfig = {
 	PROBLEM_SERVICE_URL: process.env.PROBLEM_SERVICE_URL || "http://localhost:3001",
 	X_API_KEY: getXApiKey(),
 	CHALLENGE_SERVICE_URL: process.env.CHALLENGE_SERVICE_URL || "http://localhost:3101",
+	ALLOWED_ORIGINS: process.env.ALLOWED_ORIGINS
+		? process.env.ALLOWED_ORIGINS.split(",")
+		: ["http://localhost:5173"],
 };
 
 export const constantConfig = {
