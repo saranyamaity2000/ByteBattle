@@ -33,8 +33,9 @@ export async function buildServer() {
 
 	// CORS setup to allow all origins
 	await app.register(fastifyCors, {
-		origin: "*",
+		origin: envConfig.ALLOWED_ORIGINS,
 		methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+		credentials: true,
 	});
 
 	// Rate limiting (limit each IP to 60 requests per minute)

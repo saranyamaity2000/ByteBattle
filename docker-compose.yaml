@@ -1,0 +1,117 @@
+services:
+    rabbitmq:
+        image: rabbitmq:3-management
+        container_name: rabbitmq
+        hostname: my-rabbitmq # helps to point to the same host always
+        ports:
+            - "5672:5672"
+            - "15672:15672"
+        volumes:
+            - ./docker-service-data/rabbitmq_data:/var/lib/rabbitmq
+
+    localstack:
+        container_name: localstack_s3
+        image: localstack/localstack
+        ports:
+            - "4566:4566"
+        environment:
+            - DEBUG=1
+            - S3_BUCKET_NAME=byte-battle
+        volumes:
+            - ./docker-service-data/localstack_data:/var/lib/localstack
+            - ./init-s3.sh:/etc/localstack/init/ready.d/init-s3.sh # whenever localstack is ready, run this script
+
+    redis:
+        image: docker.dragonflydb.io/dragonflydb/dragonfly:latest # using dragonflydb instead of redis (as apis are compatible but better performance)
+        container_name: redis
+        ports:
+            - "6379:6379"
+        volumes:
+            - ./docker-service-data/redis_data:/data
+
+    mongodb:
+        image: mongo:latest
+        container_name: mongodb
+        ports:
+            - "27017:27017"
+        volumes:
+            - ./docker-service-data/mongodb_data:/data/db
+
+    # problem-service:
+    #     build:
+    #         context: ./ProblemService
+    #         dockerfile: Dockerfile
+    #     container_name: problem-service
+    #     ports:
+    #         - "3000:3000"
+    #     environment:
+    #         - ALLOWED_ORIGINS=http://localhost:5173
+    #         - MONGO_URI=mongodb://mongodb:27017/problemservice
+    #         - AWS_S3_ENDPOINT=http://localstack:4566
+    #         - AWS_ACCESS_KEY_ID=test
+    #         - AWS_ACCESS_KEY_SECRET=test
+    #         - AWS_REGION=us-east-1
+    #         - AWS_BUCKET_NAME=byte-battle
+    #     depends_on:
+    #         - mongodb
+    #         - localstack
+
+    # submission-service:
+    #     build:
+    #         context: ./SubmissionService
+    #         dockerfile: Dockerfile
+    #     container_name: submission-service
+    #     ports:
+    #         - "3001:3001"
+    #     environment:
+    #         - ALLOWED_ORIGINS=http://localhost:5173
+    #         - MONGODB_URI=mongodb://mongodb:27017/submission-service
+    #         - RABBITMQ_URL=amqp://rabbitmq:5672
+    #         - PROBLEM_SERVICE_URL=http://problem-service:3000
+    #     depends_on:
+    #         - mongodb
+    #         - rabbitmq
+    #         - problem-service
+
+    # evaluator-service:
+    #     build:
+    #         context: ./EvaluatorService
+    #         dockerfile: Dockerfile
+    #     container_name: evaluator-service
+    #     environment:
+    #         - RABBITMQ_URL=amqp://rabbitmq:5672
+    #         - PROBLEM_SERVICE_BASE_URL=http://problem-service:3000
+    #         - SUBMISSION_SERVICE_BASE_URL=http://submission-service:3001
+    #     depends_on:
+    #         - rabbitmq
+    #         - problem-service
+    #         - submission-service
+
+    # battle-ws-service:
+    #     build:
+    #         context: ./BattleWSService
+    #         dockerfile: Dockerfile
+    #     container_name: battle-ws-service
+    #     ports:
+    #         - "3101:3101"
+    #     environment:
+    #         - ALLOWED_ORIGINS=http://localhost:5173
+    #         - MONGO_URI=mongodb://mongodb:27017/bytebattle
+    #         - REDIS_HOST=redis
+    #         - PROBLEM_SERVICE_URL=http://problem-service:3000
+    #     depends_on:
+    #         - mongodb
+    #         - redis
+    #         - problem-service
+
+    # frontend:
+    #     build:
+    #         context: ./Frontend
+    #         dockerfile: Dockerfile
+    #     container_name: frontend
+    #     ports:
+    #         - "5173:80"
+    #     depends_on:
+    #         - problem-service
+    #         - submission-service
+    #         - battle-ws-service

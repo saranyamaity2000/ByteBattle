@@ -3,7 +3,7 @@ import logger from "../config/logger.config";
 import { BadRequestError, InternalServerError } from "../utils/errors/app.error";
 import { getFileExtension } from "../utils/helpers/extension.helpers";
 import { TestCasesZodSchema } from "../validators/testcase.validator";
-import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3";
+import { S3Client, GetObjectCommand, S3ClientConfig } from "@aws-sdk/client-s3";
 import { Upload } from "@aws-sdk/lib-storage";
 import { Readable } from "stream";
 
@@ -12,7 +12,7 @@ export class TestcaseService {
 		if (!file.buffer) {
 			logger.error("No file buffer found");
 			throw new InternalServerError(
-				"File Buffer Expected! May be not using InMemoryStorage?"
+				"File Buffer Expected! May be not using InMemoryStorage?",
 			);
 		}
 		const fileContent: string = file.buffer.toString("utf-8");
@@ -32,13 +32,20 @@ export class TestcaseService {
 	}
 
 	async uploadTestCaseToS3(file: Express.Multer.File, fileNameToBeUsed: string) {
-		const s3 = new S3Client({
+		const s3Config: S3ClientConfig = {
 			region: serverConfig.AWS.REGION,
 			credentials: {
 				accessKeyId: serverConfig.AWS.ACCESS_KEY_ID,
 				secretAccessKey: serverConfig.AWS.ACCESS_KEY_SECRET,
 			},
-		});
+		};
+
+		if (serverConfig.AWS.S3_ENDPOINT) {
+			s3Config.endpoint = serverConfig.AWS.S3_ENDPOINT;
+			s3Config.forcePathStyle = true; // Required for LocalStack
+		}
+
+		const s3 = new S3Client(s3Config);
 
 		const params = {
 			Bucket: serverConfig.AWS.BUCKET_NAME,
@@ -58,7 +65,7 @@ export class TestcaseService {
 			logger.info(`Successfully uploaded test case to S3: ${params.Key}`);
 			return `${params.Key}`; // return the S3 object Url path
 		} catch (error) {
-			logger.error(`Failed to upload test case to S3: ${error as Error}.message`);
+			logger.error(`Failed to upload test case to S3: ${(error as Error).message}`);
 			throw new BadRequestError("Failed to upload file to S3");
 		}
 	}
@@ -67,13 +74,20 @@ export class TestcaseService {
 		contentType: string;
 		fileName: string;
 	}> {
-		const s3 = new S3Client({
+		const s3Config: S3ClientConfig = {
 			region: serverConfig.AWS.REGION,
 			credentials: {
 				accessKeyId: serverConfig.AWS.ACCESS_KEY_ID,
 				secretAccessKey: serverConfig.AWS.ACCESS_KEY_SECRET,
 			},
-		});
+		};
+
+		if (serverConfig.AWS.S3_ENDPOINT) {
+			s3Config.endpoint = serverConfig.AWS.S3_ENDPOINT;
+			s3Config.forcePathStyle = true; // Required for LocalStack
+		}
+
+		const s3 = new S3Client(s3Config);
 
 		const params = {
 			Bucket: serverConfig.AWS.BUCKET_NAME,
