@@ -5,9 +5,12 @@ import { Redis } from "ioredis";
 import { redisClient } from "../clients/redis.client.js";
 import challengeRepo from "../repos/challenge.repo.js";
 import { Lock, Redlock } from "@sesamecare-oss/redlock";
+import socketService from "./socket.service.js";
+import type { Server } from "socket.io";
 
 class ChallengeService {
 	private readonly redlock: Redlock;
+	private io: Server | null = null;
 
 	constructor(private readonly rc: Redis) {
 		this.redlock = new Redlock([rc], {
@@ -18,6 +21,11 @@ class ChallengeService {
 			automaticExtensionThreshold: 500,
 		});
 	}
+
+	attachIO(io: Server): void {
+		this.io = io;
+	}
+
 	async storeChallengeReq(challengeId: string, challengeData: BasicChallengeInfo): Promise<void> {
 		await this.rc.set(`challengeReq:${challengeId}`, JSON.stringify(challengeData));
 	}
@@ -54,7 +62,7 @@ class ChallengeService {
 
 	async processSuccessfulChallengeSubmission(
 		challengeId: string,
-		successfulSubmissionBy: string
+		successfulSubmissionBy: string,
 	): Promise<void> {
 		console.log("aquiring lock for challenge:", challengeId);
 		const lockKey = `lock:challenge:${challengeId}`;
@@ -74,7 +82,7 @@ class ChallengeService {
 			}
 
 			const challengeEndTime = new Date(
-				challenge.createdAt.getTime() + challenge.timeLimitInMin * 60 * 1000
+				challenge.createdAt.getTime() + challenge.timeLimitInMin * 60 * 1000,
 			);
 			const now = new Date();
 
@@ -84,10 +92,13 @@ class ChallengeService {
 
 			const updatedChallenge = await challengeRepo.setWinner(
 				challengeId,
-				successfulSubmissionBy
+				successfulSubmissionBy,
 			);
 			if (!updatedChallenge) {
 				throw new Error("Failed to update challenge winner");
+			} else {
+				// we won't wait here for the socket to be sent
+				this.announceChallengeCompletion(updatedChallenge);
 			}
 		} finally {
 			if (lock) {
@@ -95,6 +106,24 @@ class ChallengeService {
 				await lock.release();
 			}
 		}
+	}
+
+	async announceChallengeCompletion(challenge: IChallenge) {
+		if (!this.io) {
+			throw new Error("Socket IO not initialized");
+		}
+		const socketIds = await Promise.all([
+			socketService.getSocketId(challenge.challengedFrom),
+			socketService.getSocketId(challenge.challengedTo),
+		]);
+		socketIds
+			.filter((socketId) => socketId !== null)
+			.forEach((socketId) => {
+				this.io?.sockets.sockets.get(socketId)?.emit("challenge-completed", {
+					challengeId: challenge.challengeId,
+					winner: challenge.winner,
+				});
+			});
 	}
 }
 

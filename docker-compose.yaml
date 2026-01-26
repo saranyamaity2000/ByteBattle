@@ -17,6 +17,7 @@ services:
         environment:
             - DEBUG=1
             - S3_BUCKET_NAME=byte-battle
+            - PERSISTENCE=1 # keep the uploaded fine even after container is removed
         volumes:
             - ./docker-service-data/localstack_data:/var/lib/localstack
             - ./init-s3.sh:/etc/localstack/init/ready.d/init-s3.sh # whenever localstack is ready, run this script
