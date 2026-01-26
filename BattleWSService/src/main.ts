@@ -14,6 +14,7 @@ import { createAdapter } from "@socket.io/redis-adapter";
 import cors from "cors";
 import v1Router from "./routers/v1/index.router.js";
 import { initializeSupabase } from "./middlewares/auth.middleware.js";
+import challengeService from "./services/challenge.service.js";
 
 declare module "socket.io" {
 	interface Socket {
@@ -81,7 +82,10 @@ io.on("connection", (socket) => {
 });
 
 (async () => {
+	// initialize supabase
 	initializeSupabase(serverConfig.SUPABASE_URL, serverConfig.SUPABASE_API_KEY);
+	// attach io to socket service
+	challengeService.attachIO(io);
 	try {
 		await mongoose.connect(serverConfig.MONGO_URI);
 		console.log("MongoDB connected successfully");
@@ -91,5 +95,6 @@ io.on("connection", (socket) => {
 	}
 	httpServer.listen(serverConfig.PORT, () => {
 		console.log(`SocketIO server running on ws://localhost:${serverConfig.PORT}`);
+		console.log(`normal http server running on http://localhost:${serverConfig.PORT}`);
 	});
 })();

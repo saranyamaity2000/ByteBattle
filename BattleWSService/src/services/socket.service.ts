@@ -1,6 +1,6 @@
 import type { Redis } from "ioredis";
 import { redisClient } from "../clients/redis.client.js";
-import type { BasicChallengeInfo } from "../types/challenge.type.js";
+import type { Server } from "socket.io";
 
 class SocketService {
 	constructor(private readonly rc: Redis) {}

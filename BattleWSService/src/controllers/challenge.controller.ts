@@ -57,7 +57,7 @@ class ChallengeController {
 	}
 
 	async handleChallengeCallback(req: Request, res: Response) {
-		const { eventName, eventData } = req.body;
+		const { eventName, eventData } = req.body; // TODO : better validation using zod
 		if (eventName !== "submissionSuccess") {
 			return res.status(400).json({ error: "Unsupported event" });
 		} else {
@@ -67,7 +67,7 @@ class ChallengeController {
 			try {
 				await challengeService.processSuccessfulChallengeSubmission(
 					eventData.challengeId,
-					eventData.successfulSubmissionBy
+					eventData.successfulSubmissionBy,
 				);
 				return res.status(200).json({ success: true });
 			} catch (error) {
