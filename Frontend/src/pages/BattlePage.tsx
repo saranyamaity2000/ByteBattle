@@ -18,6 +18,7 @@ import {
 import { useChallenges } from "@/hooks/useChallenges";
 import { useAuthContext } from "@/hooks/context-hooks/useAuthContext";
 import Utils from "@/utils/utils";
+import { challengeService } from "@/services/challengeService";
 
 export const BattlePage: React.FC = () => {
 	const [opponentEmail, setOpponentEmail] = useState("");
@@ -46,12 +47,12 @@ export const BattlePage: React.FC = () => {
 				"Failed to load challenges data. Please try again later." +
 					(errorOngoingChallenges ?? "") +
 					(errorPastChallenges ?? "") +
-					"."
+					".",
 			);
 		}
 	}, [errorOngoingChallenges, errorPastChallenges]);
 
-	const handleChallenge = () => {
+	const handleChallenge = async () => {
 		setError("");
 
 		if (!opponentEmail.trim()) {
@@ -61,6 +62,12 @@ export const BattlePage: React.FC = () => {
 
 		if (!Utils.validateEmail(opponentEmail)) {
 			setError("Please enter a valid email address");
+			return;
+		}
+
+		const isAvailable = await challengeService.isAvailableForChallenge(opponentEmail);
+		if (!isAvailable) {
+			setError("Opponent is not available for a challenge 💔");
 			return;
 		}
 
@@ -320,7 +327,7 @@ export const BattlePage: React.FC = () => {
 															<Clock className="w-4 h-4 inline mr-1" />
 															{challenge.timeLimitInMin} min •{" "}
 															{new Date(
-																challenge.createdAt
+																challenge.createdAt,
 															).toLocaleDateString()}
 														</div>
 													</div>
@@ -333,7 +340,7 @@ export const BattlePage: React.FC = () => {
 													Showing {(currentPage - 1) * 5 + 1} to{" "}
 													{Math.min(
 														currentPage * 5,
-														pastChallenges.length
+														pastChallenges.length,
 													)}{" "}
 													of {pastChallenges.length} challenges
 												</p>
@@ -442,7 +449,7 @@ export const BattlePage: React.FC = () => {
 										// Navigate to problem page - you'll need to implement this
 										console.log(
 											"Navigate to problem:",
-											ongoingChallenges[0].problemId
+											ongoingChallenges[0].problemId,
 										);
 									}}
 								>

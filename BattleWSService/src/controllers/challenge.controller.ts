@@ -1,6 +1,6 @@
-import type { IChallenge } from "../models/challenge.model.js";
 import challengeService from "../services/challenge.service.js";
 import { type Request, type Response } from "express";
+import socketService from "../services/socket.service.js";
 
 class ChallengeController {
 	async getOngoingChallenges(req: Request, res: Response) {
@@ -71,9 +71,19 @@ class ChallengeController {
 				);
 				return res.status(200).json({ success: true });
 			} catch (error) {
-				return res.status(500).json({ error: "Failed to process event" });
+				return res.status(500).json({ success: false, error: "Failed to process event" });
 			}
 		}
+	}
+
+	async isAvailableForChallenge(req: Request, res: Response) {
+		const email = req.params.email;
+		if (!email) {
+			return res.status(400).json({ success: false, error: "Email is required" });
+		}
+		const socketId = await socketService.getSocketId(email);
+		const online = !!socketId;
+		res.status(200).json({ success: true, data: { online } });
 	}
 }
 

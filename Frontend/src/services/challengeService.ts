@@ -23,7 +23,7 @@ apiClient.interceptors.response.use(
 	(error) => {
 		console.error("API Error:", error.response?.data || error.message);
 		return Promise.reject(error);
-	}
+	},
 );
 
 export interface ApiChallenge {
@@ -41,12 +41,13 @@ export interface ChallengeService {
 	getOnGoingChallenges(): Promise<ApiChallenge[]>;
 	getPastChallenges(): Promise<ApiChallenge[]>;
 	getChallengeById(challengeId: string): Promise<ApiChallenge | null>;
+	isAvailableForChallenge(opponentEmail: string): Promise<boolean>;
 }
 
 class ChallengeServiceImpl implements ChallengeService {
 	async getOnGoingChallenges(): Promise<ApiChallenge[]> {
 		const response = await apiClient.get<{ success: boolean; data: ApiChallenge[] }>(
-			"/challenges/ongoing"
+			"/challenges/ongoing",
 		);
 		if (!response.data.success) {
 			throw new Error("Failed to fetch ongoing challenges");
@@ -56,7 +57,7 @@ class ChallengeServiceImpl implements ChallengeService {
 
 	async getPastChallenges(): Promise<ApiChallenge[]> {
 		const response = await apiClient.get<{ success: boolean; data: ApiChallenge[] }>(
-			"/challenges/past"
+			"/challenges/past",
 		);
 		if (!response.data.success) {
 			throw new Error("Failed to fetch past challenges");
@@ -78,6 +79,22 @@ class ChallengeServiceImpl implements ChallengeService {
 			console.error("Error fetching challenge by ID:", error);
 			return null;
 		}
+	}
+
+	async isAvailableForChallenge(opponentEmail: string): Promise<boolean> {
+		try {
+			const response = await apiClient.get<
+				{ success: true; data: { online: boolean } } | { success: false; error: string }
+			>(`/challenges/available/${opponentEmail}`);
+			if (response.data.success) {
+				return response.data.data.online;
+			} else {
+				throw new Error(response.data.error);
+			}
+		} catch (err) {
+			console.error("Error fetching challenge by ID:", err);
+		}
+		return false;
 	}
 }
 

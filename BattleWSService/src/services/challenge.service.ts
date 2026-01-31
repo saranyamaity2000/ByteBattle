@@ -60,6 +60,11 @@ class ChallengeService {
 		return await challengeRepo.getChallengeById(challengeId);
 	}
 
+	async isOpponentOnline(opponentEmail: string): Promise<boolean> {
+		const socketId = await socketService.getSocketId(opponentEmail);
+		return !!socketId;
+	}
+
 	async processSuccessfulChallengeSubmission(
 		challengeId: string,
 		successfulSubmissionBy: string,
