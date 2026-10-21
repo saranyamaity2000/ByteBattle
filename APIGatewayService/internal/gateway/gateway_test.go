@@ -90,6 +90,8 @@ func TestRoutesBrowserTrafficAndStripsForgedIdentityHeaders(t *testing.T) {
 			request.Header.Set("X-User-Email", "forged@example.com")
 			request.Header.Set("X-User-Role", "admin")
 			request.Header.Set("X-Request-ID", "forged-request-id")
+			request.Header.Set("X-Forwarded-For", "forged-client")
+			request.Header.Set("Connection", "X-Request-ID")
 
 			response, err := http.DefaultClient.Do(request)
 			if err != nil {
@@ -114,6 +116,9 @@ func TestRoutesBrowserTrafficAndStripsForgedIdentityHeaders(t *testing.T) {
 			}
 			if requestID := lastRequest.headers.Get("X-Request-ID"); requestID == "" || requestID == "forged-request-id" {
 				t.Errorf("X-Request-ID = %q, want a gateway-generated ID", requestID)
+			}
+			if forwardedFor := lastRequest.headers.Get("X-Forwarded-For"); forwardedFor == "forged-client" {
+				t.Errorf("X-Forwarded-For = %q, want gateway-generated forwarding header", forwardedFor)
 			}
 		})
 	}
@@ -220,7 +225,14 @@ func TestComposeKeepsDomainServicesPrivate(t *testing.T) {
 		t.Fatal("resolve test file path")
 	}
 	composeFile := filepath.Clean(filepath.Join(filepath.Dir(testFile), "../../../docker-compose.yaml"))
-	output, err := exec.Command("docker", "compose", "-f", composeFile, "config", "--format", "json").Output()
+	command := exec.Command("docker", "compose", "-f", composeFile, "config", "--format", "json")
+	command.Env = append(
+		os.Environ(),
+		"X_API_KEY=test-internal-api-key",
+		"VITE_SUPABASE_URL=https://test.supabase.co",
+		"VITE_SUPABASE_PUBLISHABLE_DEFAULT_KEY=test-key",
+	)
+	output, err := command.Output()
 	if err != nil {
 		t.Fatalf("resolve Compose configuration: %v", err)
 	}

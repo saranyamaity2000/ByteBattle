@@ -47,6 +47,24 @@ func TestStripIdentityHeaders(t *testing.T) {
 	}
 }
 
+func TestStripForwardingHeaders(t *testing.T) {
+	t.Parallel()
+
+	header := make(http.Header)
+	header.Set("Forwarded", "for=forged-client")
+	header.Set("X-Forwarded-For", "forged-client")
+	header.Set("X-Forwarded-Host", "forged-host")
+	header.Set("X-Forwarded-Proto", "https")
+
+	StripForwardingHeaders(header)
+
+	for _, key := range []string{"Forwarded", "X-Forwarded-For", "X-Forwarded-Host", "X-Forwarded-Proto"} {
+		if got := header.Get(key); got != "" {
+			t.Errorf("%s = %q, want stripped header", key, got)
+		}
+	}
+}
+
 func TestNewRequestID(t *testing.T) {
 	t.Parallel()
 

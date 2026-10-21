@@ -10,6 +10,12 @@ COPY package.json package-lock.jso* ./
 # Install dependencies
 RUN npm install
 
+# Vite embeds these public values in the production bundle at build time.
+ARG VITE_SUPABASE_URL
+ARG VITE_SUPABASE_PUBLISHABLE_DEFAULT_KEY
+ENV VITE_SUPABASE_URL=$VITE_SUPABASE_URL
+ENV VITE_SUPABASE_PUBLISHABLE_DEFAULT_KEY=$VITE_SUPABASE_PUBLISHABLE_DEFAULT_KEY
+
 # Copy the rest of the application source code
 COPY . .
 

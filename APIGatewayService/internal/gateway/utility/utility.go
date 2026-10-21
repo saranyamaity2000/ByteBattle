@@ -21,6 +21,12 @@ func StripIdentityHeaders(header http.Header) {
 	}
 }
 
+func StripForwardingHeaders(header http.Header) {
+	for _, key := range []string{"Forwarded", "X-Forwarded-For", "X-Forwarded-Host", "X-Forwarded-Proto"} {
+		header.Del(key)
+	}
+}
+
 func NewRequestID() string {
 	bytes := make([]byte, 16)
 	if _, err := rand.Read(bytes); err != nil {

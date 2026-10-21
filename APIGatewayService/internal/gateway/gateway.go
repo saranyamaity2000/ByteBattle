@@ -101,17 +101,19 @@ func validateConfig(config Config) error {
 }
 
 func newProxy(upstream *url.URL, prefix string) *httputil.ReverseProxy {
-	proxy := httputil.NewSingleHostReverseProxy(upstream)
-	originalDirector := proxy.Director
-	proxy.Director = func(request *http.Request) {
-		request.URL.Path = strings.TrimPrefix(request.URL.Path, prefix)
-		if request.URL.Path == "" {
-			request.URL.Path = "/"
-		}
-		request.URL.RawPath = ""
-		originalDirector(request)
-		utility.StripIdentityHeaders(request.Header)
-		request.Header.Set("X-Request-ID", utility.NewRequestID())
+	return &httputil.ReverseProxy{
+		Rewrite: func(proxyRequest *httputil.ProxyRequest) {
+			request := proxyRequest.Out
+			request.URL.Path = strings.TrimPrefix(proxyRequest.In.URL.Path, prefix)
+			if request.URL.Path == "" {
+				request.URL.Path = "/"
+			}
+			request.URL.RawPath = ""
+			proxyRequest.SetURL(upstream)
+			utility.StripIdentityHeaders(request.Header)
+			utility.StripForwardingHeaders(request.Header)
+			proxyRequest.SetXForwarded()
+			request.Header.Set("X-Request-ID", utility.NewRequestID())
+		},
 	}
-	return proxy
 }
