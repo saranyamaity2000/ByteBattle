@@ -34,22 +34,16 @@ jobs:
             api-gateway:
                 - 'APIGatewayService/**'
                 - 'docker-compose.yaml'
-                - '.github/workflows/service-ci.yml'
             frontend:
                 - 'Frontend/**'
-                - '.github/workflows/service-ci.yml'
             problem-service:
                 - 'ProblemService/**'
-                - '.github/workflows/service-ci.yml'
             submission-service:
                 - 'SubmissionService/**'
-                - '.github/workflows/service-ci.yml'
             battle-ws-service:
                 - 'BattleWSService/**'
-                - '.github/workflows/service-ci.yml'
             evaluator-service:
                 - 'EvaluatorService/**'
-                - '.github/workflows/service-ci.yml'
 
   api-gateway:
     name: Test API Gateway
