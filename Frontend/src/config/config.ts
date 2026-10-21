@@ -13,6 +13,8 @@ interface AppConfig {
 	problemServiceApi: ServiceConfig;
 	submissionServiceApi: ServiceConfig;
 	challengeServiceApi: ServiceConfig;
+	battleSocketUrl: string;
+	battleSocketPath: string;
 }
 
 const getServiceUrl = (envKey: string, devDefault: string): string => {
@@ -32,20 +34,22 @@ const getTimeout = (): number => {
 
 export const config: AppConfig = {
 	problemServiceApi: {
-		baseUrl: getServiceUrl("VITE_PROBLEM_SERVICE_URL", "http://localhost:3000/api/v1"),
+		baseUrl: getServiceUrl("VITE_PROBLEM_SERVICE_URL", "http://localhost:8080/problem-service/api/v1"),
 		timeout: getTimeout(),
 		withCredentials: true,
 	},
 	submissionServiceApi: {
-		baseUrl: getServiceUrl("VITE_SUBMISSION_SERVICE_URL", "http://localhost:3001/api/v1"),
+		baseUrl: getServiceUrl("VITE_SUBMISSION_SERVICE_URL", "http://localhost:8080/submission-service/api/v1"),
 		timeout: getTimeout(),
 		withCredentials: true,
 	},
 	challengeServiceApi: {
-		baseUrl: getServiceUrl("VITE_CHALLENGE_SERVICE_URL", "http://localhost:3101/api/v1"),
+		baseUrl: getServiceUrl("VITE_CHALLENGE_SERVICE_URL", "http://localhost:8080/battle-ws-service/api/v1"),
 		timeout: getTimeout(),
 		withCredentials: true,
 	},
+	battleSocketUrl: getServiceUrl("VITE_BATTLE_SOCKET_URL", "http://localhost:8080"),
+	battleSocketPath: import.meta.env.VITE_BATTLE_SOCKET_PATH || "/battle-ws-service/socket.io",
 };
 
 // log for debugging in development

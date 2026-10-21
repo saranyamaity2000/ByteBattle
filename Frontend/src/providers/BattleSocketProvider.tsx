@@ -8,6 +8,7 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { ChallengeRequest } from "@/components/ChallengeRequest";
 import { usePageLoaderContext } from "@/hooks/context-hooks/usePageLoaderContext";
 import { problemService } from "@/services/problemService";
+import { config } from "@/config/config";
 
 type ChallengeRequestData = {
 	challengedBy: string;
@@ -34,8 +35,9 @@ export const BattleSocketProvider = (props: PropsWithChildren) => {
 	// Store match data for future use (e.g., redirecting to battle page)
 
 	const battleSocketRef = useRef<UsableSocket>(
-		io(import.meta.env.VITE_BATTLE_SOCKET_URL, {
+		io(config.battleSocketUrl, {
 			autoConnect: false,
+			path: config.battleSocketPath,
 			auth: async (cb) => {
 				const token = await getAuthToken();
 				cb({ token });

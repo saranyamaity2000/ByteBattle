@@ -1,0 +1,14 @@
+listenAddress: ":8080"
+
+upstreams:
+    problem-service: http://problem-service:3000
+    submission-service: http://submission-service:3001
+    battle-ws-service: http://battle-ws-service:3101
+
+routes:
+    - prefix: /problem-service
+      upstream: problem-service
+    - prefix: /submission-service
+      upstream: submission-service
+    - prefix: /battle-ws-service
+      upstream: battle-ws-service

@@ -2,6 +2,7 @@ import { FastifyServerOptions } from "fastify";
 import { envConfig } from ".";
 
 export const fastifyServerOptions: FastifyServerOptions = {
+	trustProxy: true,
 	logger: {
 		level: envConfig.LOG_LEVEL,
 		base: {}, // This removes pid and hostname from the base fields

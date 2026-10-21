@@ -1,0 +1,191 @@
+name: Service CI
+
+on:
+  pull_request:
+    branches:
+      - main
+      - migrate-auth
+  push:
+    branches:
+      - main
+      - migrate-auth
+
+concurrency:
+  group: service-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  changes:
+    name: Detect changed services
+    runs-on: ubuntu-latest
+    outputs:
+      api-gateway: ${{ steps.filter.outputs.api-gateway }}
+      frontend: ${{ steps.filter.outputs.frontend }}
+      problem-service: ${{ steps.filter.outputs.problem-service }}
+      submission-service: ${{ steps.filter.outputs.submission-service }}
+      battle-ws-service: ${{ steps.filter.outputs.battle-ws-service }}
+      evaluator-service: ${{ steps.filter.outputs.evaluator-service }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: filter
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            api-gateway:
+                - 'APIGatewayService/**'
+                - 'docker-compose.yaml'
+            frontend:
+                - 'Frontend/**'
+            problem-service:
+                - 'ProblemService/**'
+            submission-service:
+                - 'SubmissionService/**'
+            battle-ws-service:
+                - 'BattleWSService/**'
+            evaluator-service:
+                - 'EvaluatorService/**'
+
+  api-gateway:
+    name: Test API Gateway
+    needs: changes
+    if: needs.changes.outputs.api-gateway == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: APIGatewayService
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.21"
+          cache-dependency-path: APIGatewayService/go.sum
+      - run: go test ./...
+
+  frontend:
+    name: Validate Frontend
+    needs: changes
+    if: needs.changes.outputs.frontend == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: Frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: Frontend/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run build
+
+  problem-service:
+    name: Test Problem Service
+    needs: changes
+    if: needs.changes.outputs.problem-service == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ProblemService
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: ProblemService/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm run type-check
+      - run: pnpm run test
+        env:
+          NODE_ENV: test
+          MONGO_URI: mongodb://localhost:27017/problemservice-test
+          PORT: 3001
+          ALLOWED_ORIGINS: http://localhost:5173
+          SUPABASE_URL: https://test.supabase.co
+          SUPABASE_SERVICE_ROLE_KEY: test-key
+          AWS_ACCESS_KEY_ID: test-key
+          AWS_ACCESS_KEY_SECRET: test-secret
+          AWS_REGION: us-east-1
+          AWS_BUCKET_NAME: test-bucket
+          GOOGLE_GENERATIVE_AI_API_KEY: test-key
+
+  submission-service:
+    name: Build Submission Service
+    needs: changes
+    if: needs.changes.outputs.submission-service == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: SubmissionService
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: SubmissionService/package-lock.json
+      - run: npm ci
+      - run: npm run build
+
+  battle-ws-service:
+    name: Build BattleWS Service
+    needs: changes
+    if: needs.changes.outputs.battle-ws-service == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: BattleWSService
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: BattleWSService/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm run build
+
+  evaluator-service:
+    name: Test Evaluator Service
+    needs: changes
+    if: needs.changes.outputs.evaluator-service == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: EvaluatorService
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.24"
+          cache-dependency-path: EvaluatorService/go.sum
+      - run: go test ./...
+
+  merge-gate:
+    name: Merge gate
+    if: always()
+    needs:
+      - api-gateway
+      - frontend
+      - problem-service
+      - submission-service
+      - battle-ws-service
+      - evaluator-service
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify affected service checks
+        env:
+          RESULTS: ${{ toJSON(needs.*.result) }}
+        run: |
+          if echo "$RESULTS" | grep -Eq '"(failure|cancelled)"'; then
+            echo "A required service check failed or was cancelled: $RESULTS"
+            exit 1
+          fi
